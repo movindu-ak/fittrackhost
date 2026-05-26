@@ -3,14 +3,15 @@ import { Landing } from './pages/Landing';
 import { Login } from './pages/Login';
 import { SignUp } from './pages/SignUp';
 import { MembershipPlanSelection } from './pages/MembershipPlanSelection';
-import { PaymentPage } from './pages/PaymentPage';
+import PaymentPage from './pages/PaymentPage';
 import { MemberDashboard } from './pages/MemberDashboard';
 import { TrainerDashboard } from './pages/TrainerDashboard';
 import { BookingPage } from './pages/BookingPage';
-import { MembershipPayments } from './pages/MembershipPayments';
+import MembershipPayments from './pages/MembershipPayments';
 import { Profile } from './pages/Profile';
 import { AdminDashboard } from './pages/AdminDashboard';
 import { AdminLogin } from './pages/AdminLogin';
+import PaymentSuccess from './pages/PaymentSuccess';
 
 // Protected Route Component
 const ProtectedRoute = ({ children, allowedRoles }) => {
@@ -40,6 +41,8 @@ export default function App() {
           <Route path="/admin" element={<AdminLogin />} />
           <Route path="/select-membership" element={<MembershipPlanSelection />} />
           <Route path="/payment" element={<PaymentPage />} />
+          <Route path="/payment/success" element={<PaymentSuccess />} />
+          <Route path="/payment/cancel"  element={<PaymentPage />} />
 
           {/* Protected Routes */}
          <Route 

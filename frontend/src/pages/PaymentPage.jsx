@@ -1,288 +1,169 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { Dumbbell, CreditCard, Lock, CheckCircle, ArrowLeft } from 'lucide-react';
-import { Input } from '../components/ui/Input';
+import { useLocation, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
-export const PaymentPage = () => {
-  const navigate = useNavigate();
+const API_URL = 'http://localhost:5000/api';
+
+export default function PaymentPage() {
   const location = useLocation();
-  const { plan, userData } = location.state || {};
+  const navigate  = useNavigate();
+  const [loading, setLoading]   = useState(false);
+  const [error, setError]       = useState('');
+  const [orderData, setOrderData] = useState(null);
 
-  const [formData, setFormData] = useState({
-    cardNumber: '',
-    cardHolder: '',
-    expiryDate: '',
-    cvv: '',
-    amount: plan?.price || ''
-  });
-  const [errors, setErrors] = useState({});
-  const [loading, setLoading] = useState(false);
-  const [paymentSuccess, setPaymentSuccess] = useState(false);
+  // Expect: { membershipId, plan, amount } from navigate state
+  const { membershipId, plan, amount } = location.state || {};
 
   useEffect(() => {
-    if (!plan) {
-      navigate('/signup');
+    if (!membershipId || !amount) {
+      navigate('/member/dashboard');
     }
-  }, [plan, navigate]);
+  }, []);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    let formattedValue = value;
+  const getAuthHeader = () => ({
+    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+  });
 
-    // Format card number with spaces
-    if (name === 'cardNumber') {
-      formattedValue = value.replace(/\s/g, '').replace(/(\d{4})/g, '$1 ').trim();
-      if (formattedValue.length > 19) return;
-    }
+  // Step 1: Get order data from backend
+  const handleCreateOrder = async () => {
+    try {
+      setLoading(true);
+      setError('');
 
-    // Format expiry date
-    if (name === 'expiryDate') {
-      formattedValue = value.replace(/\D/g, '');
-      if (formattedValue.length >= 2) {
-        formattedValue = formattedValue.slice(0, 2) + '/' + formattedValue.slice(2, 4);
-      }
-      if (formattedValue.length > 5) return;
-    }
+      const { data } = await axios.post(
+        `${API_URL}/payments/create-order`,
+        {
+          membershipId,
+          amount,
+          description: `FitTrack ${plan} Membership`
+        },
+        getAuthHeader()
+      );
 
-    // Limit CVV to 3 digits
-    if (name === 'cvv' && value.length > 3) return;
+      setOrderData(data);
 
-    setFormData(prev => ({
-      ...prev,
-      [name]: formattedValue
-    }));
-
-    if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: '' }));
-    }
-  };
-
-  const validateForm = () => {
-    const newErrors = {};
-
-    if (!formData.cardNumber || formData.cardNumber.replace(/\s/g, '').length !== 16) {
-      newErrors.cardNumber = 'Please enter a valid 16-digit card number';
-    }
-
-    if (!formData.cardHolder || formData.cardHolder.length < 3) {
-      newErrors.cardHolder = 'Please enter card holder name';
-    }
-
-    if (!formData.expiryDate || formData.expiryDate.length !== 5) {
-      newErrors.expiryDate = 'Please enter expiry date (MM/YY)';
-    }
-
-    if (!formData.cvv || formData.cvv.length !== 3) {
-      newErrors.cvv = 'Please enter 3-digit CVV';
-    }
-
-    return newErrors;
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    const newErrors = validateForm();
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      return;
-    }
-
-    setLoading(true);
-
-    // Simulate payment processing
-    setTimeout(() => {
-      setLoading(false);
-      setPaymentSuccess(true);
-      
-      // Redirect to login after 3 seconds
+      // Step 2: Auto-submit the hidden form after state updates
       setTimeout(() => {
-        navigate('/login');
-      }, 3000);
-    }, 2000);
+        document.getElementById('payhere-form').submit();
+      }, 100);
+
+    } catch (err) {
+      setError(err?.response?.data?.message || 'Failed to create order');
+      setLoading(false);
+    }
   };
-
-  if (!plan) return null;
-
-  if (paymentSuccess) {
-    return (
-      <div className="min-h-screen bg-black flex items-center justify-center px-4">
-        <div className="text-center">
-          <div className="mb-6 flex justify-center">
-            <div className="bg-green-500 rounded-full p-4">
-              <CheckCircle className="w-16 h-16 text-white" />
-            </div>
-          </div>
-          <h2 className="text-3xl font-bold text-white mb-4">Payment Successful!</h2>
-          <p className="text-neutral-400 mb-2">Your {plan.name} membership has been activated</p>
-          <p className="text-neutral-500 text-sm">Redirecting to login...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
-    <div className="min-h-screen bg-black relative overflow-hidden">
-      {/* Background */}
-      <div className="absolute inset-0 z-0">
-        <div className="absolute inset-0 bg-gradient-to-br from-black via-neutral-900/95 to-black z-10" />
-        <img
-          src="https://images.unsplash.com/photo-1761971975769-97e598bf526b"
-          alt="Gym background"
-          className="w-full h-full object-cover opacity-20"
-        />
-      </div>
+    <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
+      <div className="bg-gray-800 rounded-2xl shadow-2xl p-8 w-full max-w-md">
 
-      {/* Navigation */}
-      <nav className="relative z-50 bg-black/40 backdrop-blur-md border-b border-neutral-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-          <button
-            onClick={() => navigate('/select-membership', { state: { userData } })}
-            className="flex items-center space-x-2 text-neutral-400 hover:text-white transition"
-          >
-            <ArrowLeft className="w-5 h-5" />
-            <span className="text-sm">Back to Plans</span>
-          </button>
-
-          <button
-            onClick={() => navigate('/')}
-            className="flex items-center space-x-2 hover:opacity-80 transition"
-          >
-            <div className="bg-gradient-to-br from-green-400 to-emerald-500 p-2 rounded-lg">
-              <Dumbbell className="w-5 h-5 sm:w-6 sm:h-6 text-black" />
-            </div>
-            <span className="text-lg sm:text-xl font-bold bg-gradient-to-r from-green-400 to-emerald-500 bg-clip-text text-transparent">
-              FitTrack
-            </span>
-          </button>
-        </div>
-      </nav>
-
-      {/* Main Content */}
-      <div className="relative z-20 max-w-4xl mx-auto px-4 py-12">
+        {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">
-            Complete Your Payment
-          </h1>
-          <p className="text-neutral-400">Secure payment for {plan.name} membership</p>
+          <h1 className="text-3xl font-bold text-white mb-1">FitTrack</h1>
+          <p className="text-gray-400">Secure payment via PayHere</p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-8">
-          {/* Payment Form */}
-          <div className="bg-neutral-900/80 backdrop-blur-lg border border-neutral-800 rounded-2xl p-6 sm:p-8">
-            <div className="flex items-center gap-2 mb-6">
-              <Lock className="w-5 h-5 text-green-400" />
-              <h2 className="text-xl font-semibold text-white">Payment Details</h2>
-            </div>
-
-            <form onSubmit={handleSubmit} className="space-y-5">
-              <Input
-                label="Card Number"
-                type="text"
-                name="cardNumber"
-                value={formData.cardNumber}
-                onChange={handleChange}
-                placeholder="1234 5678 9012 3456"
-                error={errors.cardNumber}
-                required
-              />
-
-              <Input
-                label="Card Holder Name"
-                type="text"
-                name="cardHolder"
-                value={formData.cardHolder}
-                onChange={handleChange}
-                placeholder="John Doe"
-                error={errors.cardHolder}
-                required
-              />
-
-              <div className="grid grid-cols-2 gap-4">
-                <Input
-                  label="Expiry Date"
-                  type="text"
-                  name="expiryDate"
-                  value={formData.expiryDate}
-                  onChange={handleChange}
-                  placeholder="MM/YY"
-                  error={errors.expiryDate}
-                  required
-                />
-
-                <Input
-                  label="CVV"
-                  type="text"
-                  name="cvv"
-                  value={formData.cvv}
-                  onChange={handleChange}
-                  placeholder="123"
-                  error={errors.cvv}
-                  required
-                />
-              </div>
-
-              <Input
-                label="Amount"
-                type="text"
-                name="amount"
-                value={`LKR ${formData.amount.toLocaleString()}`}
-                readOnly
-                disabled
-              />
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-gradient-to-r from-green-500 to-emerald-500 text-black px-6 py-3 rounded-lg font-semibold hover:from-green-600 hover:to-emerald-600 hover:shadow-lg hover:shadow-green-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-              >
-                <CreditCard className="w-5 h-5" />
-                {loading ? 'Processing...' : `Pay LKR ${formData.amount.toLocaleString()}`}
-              </button>
-            </form>
-
-            <div className="mt-6 flex items-center justify-center gap-4 text-neutral-500 text-xs">
-              <Lock className="w-4 h-4" />
-              <span>Secure 256-bit SSL encrypted payment</span>
-            </div>
+        {/* Order Summary */}
+        <div className="bg-gray-700 rounded-xl p-5 mb-6">
+          <h2 className="text-gray-400 text-sm font-medium uppercase tracking-wider mb-3">
+            Order Summary
+          </h2>
+          <div className="flex justify-between items-center mb-2">
+            <span className="text-white font-medium capitalize">{plan} Plan</span>
+            <span className="text-2xl font-bold text-white">
+              LKR {parseFloat(amount).toLocaleString('en-LK', { minimumFractionDigits: 2 })}
+            </span>
           </div>
-
-          {/* Order Summary */}
-          <div className="bg-neutral-900/80 backdrop-blur-lg border border-neutral-800 rounded-2xl p-6 sm:p-8">
-            <h2 className="text-xl font-semibold text-white mb-6">Order Summary</h2>
-
-            <div className="space-y-4 mb-6">
-              <div className="bg-neutral-800/50 rounded-lg p-4">
-                <h3 className="text-lg font-semibold text-white mb-2">{plan.name} Plan</h3>
-                <p className="text-neutral-400 text-sm mb-3">{plan.duration}</p>
-                <ul className="space-y-2">
-                  {plan.features.slice(0, 4).map((feature, index) => (
-                    <li key={index} className="flex items-center gap-2 text-neutral-300 text-sm">
-                      <CheckCircle className="w-4 h-4 text-green-400" />
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-
-            <div className="border-t border-neutral-800 pt-4 space-y-3">
-              <div className="flex justify-between text-neutral-400">
-                <span>Subtotal</span>
-                <span>LKR {plan.price.toLocaleString()}</span>
-              </div>
-              <div className="flex justify-between text-neutral-400">
-                <span>Tax (0%)</span>
-                <span>LKR 0</span>
-              </div>
-              <div className="flex justify-between text-xl font-bold text-white pt-3 border-t border-neutral-800">
-                <span>Total</span>
-                <span>LKR {plan.price.toLocaleString()}</span>
-              </div>
-            </div>
+          <div className="flex justify-between text-gray-400 text-sm">
+            <span>Membership Subscription</span>
+            <span>LKR</span>
           </div>
         </div>
+
+        {/* Accepted Methods */}
+        <div className="mb-6">
+          <p className="text-gray-400 text-sm text-center mb-3">Accepted payment methods</p>
+          <div className="flex justify-center gap-2 flex-wrap">
+            {['Visa', 'Master', 'AMEX', 'eZCash', 'mCash', 'FriMi'].map((m) => (
+              <span key={m}
+                className="bg-gray-700 text-gray-300 text-xs px-3 py-1 rounded-full">
+                {m}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        {/* Error */}
+        {error && (
+          <div className="bg-red-900 text-red-300 text-sm rounded-lg p-3 mb-4">
+            {error}
+          </div>
+        )}
+
+        {/* Pay Button */}
+        <button
+          onClick={handleCreateOrder}
+          disabled={loading}
+          className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-900
+                     disabled:cursor-not-allowed text-white font-semibold py-4
+                     rounded-xl transition-all duration-200 text-lg"
+        >
+          {loading ? (
+            <span className="flex items-center justify-center gap-2">
+              <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24" fill="none">
+                <circle className="opacity-25" cx="12" cy="12" r="10"
+                  stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor"
+                  d="M4 12a8 8 0 018-8v8H4z" />
+              </svg>
+              Redirecting to PayHere...
+            </span>
+          ) : (
+            `Pay LKR ${parseFloat(amount).toFixed(2)}`
+          )}
+        </button>
+
+        <button
+          onClick={() => navigate(-1)}
+          className="w-full mt-3 text-gray-400 hover:text-white text-sm
+                     py-2 transition-colors duration-200"
+        >
+          ← Go Back
+        </button>
+
+        <p className="text-center text-gray-500 text-xs mt-5">
+          🔒 SSL Encrypted · Powered by PayHere
+        </p>
       </div>
+
+      {/* ── Hidden PayHere Form (auto-submitted) ── */}
+      {orderData && (
+        <form
+          id="payhere-form"
+          method="POST"
+          action={orderData.payhereUrl}
+          style={{ display: 'none' }}
+        >
+          <input type="hidden" name="merchant_id" value={orderData.merchantId} />
+          <input type="hidden" name="return_url"  value={orderData.returnUrl} />
+          <input type="hidden" name="cancel_url"  value={orderData.cancelUrl} />
+          <input type="hidden" name="notify_url"  value={orderData.notifyUrl} />
+          <input type="hidden" name="order_id"    value={orderData.orderId} />
+          <input type="hidden" name="items"       value={`FitTrack ${plan} Membership`} />
+          <input type="hidden" name="currency"    value="LKR" />
+          <input type="hidden" name="amount"      value={orderData.amount} />
+          <input type="hidden" name="hash"        value={orderData.hash} />
+
+          {/* Customer details from localStorage */}
+          <input type="hidden" name="first_name"  value={localStorage.getItem('userName')?.split(' ')[0] || 'Member'} />
+          <input type="hidden" name="last_name"   value={localStorage.getItem('userName')?.split(' ')[1] || ''} />
+          <input type="hidden" name="email"       value={localStorage.getItem('userEmail') || ''} />
+          <input type="hidden" name="phone"       value={localStorage.getItem('userPhone') || '0771234567'} />
+          <input type="hidden" name="address"     value="Colombo" />
+          <input type="hidden" name="city"        value="Colombo" />
+          <input type="hidden" name="country"     value="Sri Lanka" />
+        </form>
+      )}
     </div>
   );
-};
+}

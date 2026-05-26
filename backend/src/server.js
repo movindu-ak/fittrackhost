@@ -9,6 +9,8 @@ import bookingRoutes from './routes/booking.routes.js';
 import membershipRoutes from './routes/membership.routes.js';
 import crowdRoutes from './routes/crowd.routes.js';
 import alertRoutes from './routes/alert.routes.js';
+import paymentRoutes from './routes/payment.routes.js';
+
 
 // Load env vars
 dotenv.config();
@@ -18,12 +20,19 @@ connectDB();
 
 const app = express();
 
-// Middleware
+// ⚠️ IMPORTANT: Webhook needs raw body, so register it BEFORE express.json()
+app.use('/api/payments/notify', express.raw({ type: '*/*' }));
+
+// middleware
+app.use(cors({ origin: process.env.FRONTEND_URL }));
+app.use(express.json());
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Routes
+// ✅ Add payment routes
+app.use('/api/payments', paymentRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/memberships', membershipRoutes);

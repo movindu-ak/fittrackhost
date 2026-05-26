@@ -36,7 +36,27 @@ const membershipSchema = new mongoose.Schema({
   createdAt: {
     type: Date,
     default: Date.now
-  }
+  },
+
+  // ADD these fields to your existing Membership schema:
+
+paymentId: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: 'Payment',
+  default: null
+},
+paymentDate: {
+  type: Date,
+  default: null
+},
+paymentMethod: {
+  type: String,
+  default: null
+},
+renewalDueDate: {
+  type: Date,
+  default: null
+}
 });
 
 const Membership = mongoose.model('Membership', membershipSchema);
