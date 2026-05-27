@@ -8,6 +8,7 @@ export const MembershipPlanSelection = () => {
   const userData = location.state?.userData;
   
   const [selectedPlan, setSelectedPlan] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const plans = [
     {
@@ -56,16 +57,51 @@ export const MembershipPlanSelection = () => {
     setSelectedPlan(plan);
   };
 
-  const handleProceedToPayment = () => {
-    if (selectedPlan) {
-      navigate('/payment', {
-        state: {
-          plan: selectedPlan,
-          userData: userData
-        }
-      });
+  const handleProceedToPayment = async () => {
+  if (!selectedPlan) return;
+  setLoading(true);
+
+  try {
+    const token = localStorage.getItem('token');
+
+    // Step 1: Create membership in backend
+    const res = await fetch(
+      'https://fittrackhost.onrender.com/api/memberships',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          plan:  selectedPlan.id,
+          price: selectedPlan.price
+        })
+      }
+    );
+
+    const membership = await res.json();
+
+    if (!res.ok) {
+      throw new Error(membership.message || 'Failed to create membership');
     }
-  };
+
+    // Step 2: Navigate to payment with correct data
+    navigate('/payment', {
+      state: {
+        membershipId: membership._id,
+        plan:         selectedPlan.name,
+        amount:       selectedPlan.price
+      }
+    });
+
+  } catch (error) {
+    console.error('Error:', error);
+    alert(error.message || 'Something went wrong. Please try again.');
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="min-h-screen bg-black relative overflow-hidden">
@@ -182,17 +218,23 @@ export const MembershipPlanSelection = () => {
         </div>
 
         {/* Proceed Button */}
-        {selectedPlan && (
-          <div className="flex justify-center">
-            <button
-              onClick={handleProceedToPayment}
-              className="bg-gradient-to-r from-green-500 to-emerald-500 text-black px-8 py-4 rounded-xl font-semibold text-lg hover:from-green-600 hover:to-emerald-600 hover:shadow-lg hover:shadow-green-500/30 transition-all flex items-center gap-2"
-            >
-              <CreditCard className="w-5 h-5" />
-              Proceed to Payment
-            </button>
-          </div>
-        )}
+       {selectedPlan && (
+  <div className="flex justify-center">
+    <button
+      onClick={handleProceedToPayment}
+      disabled={loading}
+      className="bg-gradient-to-r from-green-500 to-emerald-500 text-black
+                 px-8 py-4 rounded-xl font-semibold text-lg
+                 hover:from-green-600 hover:to-emerald-600
+                 hover:shadow-lg hover:shadow-green-500/30
+                 transition-all flex items-center gap-2
+                 disabled:opacity-50 disabled:cursor-not-allowed"
+    >
+      <CreditCard className="w-5 h-5" />
+      {loading ? 'Creating membership...' : 'Proceed to Payment'}
+    </button>
+  </div>
+)}
       </div>
     </div>
   );

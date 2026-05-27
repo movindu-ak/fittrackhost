@@ -3,21 +3,23 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import API_URL from '../config.js';
 
-// const API_URL = 'https://fittrackhost.onrender.com/api';
-
 export default function PaymentPage() {
-  const location = useLocation();
+  const location  = useLocation();
   const navigate  = useNavigate();
-  const [loading, setLoading]   = useState(false);
-  const [error, setError]       = useState('');
+  const [loading, setLoading]     = useState(false);
+  const [error, setError]         = useState('');
   const [orderData, setOrderData] = useState(null);
 
-  // Expect: { membershipId, plan, amount } from navigate state
-  const { membershipId, plan, amount } = location.state || {};
+  // ── Extract state safely ──────────────────────────────────
+  const { plan: planData, membershipId } = location.state || {};
+
+  // Handle both: plan as string OR plan as object
+  const planName   = typeof planData === 'object' ? planData?.name  : planData;
+  const amount     = typeof planData === 'object' ? planData?.price : location.state?.amount;
 
   useEffect(() => {
     if (!membershipId || !amount) {
-      navigate('/member/dashboard');
+      navigate('/select-membership');
     }
   }, []);
 
@@ -25,7 +27,7 @@ export default function PaymentPage() {
     headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
   });
 
-  // Step 1: Get order data from backend
+  // Step 1: Create order on backend
   const handleCreateOrder = async () => {
     try {
       setLoading(true);
@@ -36,14 +38,14 @@ export default function PaymentPage() {
         {
           membershipId,
           amount,
-          description: `FitTrack ${plan} Membership`
+          description: `FitTrack ${planName} Membership`  // ✅ planName
         },
         getAuthHeader()
       );
 
       setOrderData(data);
 
-      // Step 2: Auto-submit the hidden form after state updates
+      // Step 2: Auto-submit hidden form to PayHere
       setTimeout(() => {
         document.getElementById('payhere-form').submit();
       }, 100);
@@ -70,9 +72,10 @@ export default function PaymentPage() {
             Order Summary
           </h2>
           <div className="flex justify-between items-center mb-2">
-            <span className="text-white font-medium capitalize">{plan} Plan</span>
+            {/* ✅ planName not plan */}
+            <span className="text-white font-medium capitalize">{planName} Plan</span>
             <span className="text-2xl font-bold text-white">
-              LKR {parseFloat(amount).toLocaleString('en-LK', { minimumFractionDigits: 2 })}
+              LKR {parseFloat(amount || 0).toLocaleString('en-LK', { minimumFractionDigits: 2 })}
             </span>
           </div>
           <div className="flex justify-between text-gray-400 text-sm">
@@ -120,7 +123,7 @@ export default function PaymentPage() {
               Redirecting to PayHere...
             </span>
           ) : (
-            `Pay LKR ${parseFloat(amount).toFixed(2)}`
+            `Pay LKR ${parseFloat(amount || 0).toFixed(2)}`
           )}
         </button>
 
@@ -150,19 +153,20 @@ export default function PaymentPage() {
           <input type="hidden" name="cancel_url"  value={orderData.cancelUrl} />
           <input type="hidden" name="notify_url"  value={orderData.notifyUrl} />
           <input type="hidden" name="order_id"    value={orderData.orderId} />
-          <input type="hidden" name="items"       value={`FitTrack ${plan} Membership`} />
+          {/* ✅ planName not plan */}
+          <input type="hidden" name="items"       value={`FitTrack ${planName} Membership`} />
           <input type="hidden" name="currency"    value="LKR" />
           <input type="hidden" name="amount"      value={orderData.amount} />
           <input type="hidden" name="hash"        value={orderData.hash} />
 
-          {/* Customer details from localStorage */}
-          <input type="hidden" name="first_name"  value={localStorage.getItem('userName')?.split(' ')[0] || 'Member'} />
-          <input type="hidden" name="last_name"   value={localStorage.getItem('userName')?.split(' ')[1] || ''} />
-          <input type="hidden" name="email"       value={localStorage.getItem('userEmail') || ''} />
-          <input type="hidden" name="phone"       value={localStorage.getItem('userPhone') || '0771234567'} />
-          <input type="hidden" name="address"     value="Colombo" />
-          <input type="hidden" name="city"        value="Colombo" />
-          <input type="hidden" name="country"     value="Sri Lanka" />
+          {/* Customer details */}
+          <input type="hidden" name="first_name" value={localStorage.getItem('userName')?.split(' ')[0] || 'Member'} />
+          <input type="hidden" name="last_name"  value={localStorage.getItem('userName')?.split(' ')[1] || ''} />
+          <input type="hidden" name="email"      value={localStorage.getItem('userEmail') || ''} />
+          <input type="hidden" name="phone"      value={localStorage.getItem('userPhone') || '0771234567'} />
+          <input type="hidden" name="address"    value="Colombo" />
+          <input type="hidden" name="city"       value="Colombo" />
+          <input type="hidden" name="country"    value="Sri Lanka" />
         </form>
       )}
     </div>
