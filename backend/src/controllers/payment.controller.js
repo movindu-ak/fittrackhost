@@ -6,6 +6,11 @@ const PAYHERE_MERCHANT_ID     = process.env.PAYHERE_MERCHANT_ID;
 const PAYHERE_MERCHANT_SECRET = process.env.PAYHERE_MERCHANT_SECRET;
 const PAYHERE_MODE            = process.env.PAYHERE_MODE || 'sandbox';
 
+console.log('PayHere Config Check:');
+console.log('Merchant ID:', PAYHERE_MERCHANT_ID);
+console.log('Secret length:', PAYHERE_MERCHANT_SECRET?.length);
+console.log('Mode:', PAYHERE_MODE);
+
 // PayHere checkout URLs
 const PAYHERE_URL = PAYHERE_MODE === 'live'
   ? 'https://www.payhere.lk/pay/checkout'
