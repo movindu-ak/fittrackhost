@@ -15,15 +15,14 @@ const PAYHERE_URL = PAYHERE_MODE === 'live'
 // HELPER: Generate PayHere MD5 Hash
 // ─────────────────────────────────────────────────────────
 const generateHash = (orderId, amount) => {
-  // Step 1: Hash the merchant secret
+  // Step 1: Hash merchant secret
   const hashedSecret = crypto
     .createHash('md5')
     .update(PAYHERE_MERCHANT_SECRET)
     .digest('hex')
     .toUpperCase();
 
-  // Step 2: Create final hash
-  // Format: MD5(merchant_id + order_id + amount(2dp) + currency + hashedSecret)
+  // Step 2: Build hash string — ORDER MATTERS!
   const hashString =
     PAYHERE_MERCHANT_ID +
     orderId +
@@ -37,7 +36,6 @@ const generateHash = (orderId, amount) => {
     .digest('hex')
     .toUpperCase();
 };
-
 // ─────────────────────────────────────────────────────────
 // 1. CREATE PAYMENT ORDER
 // POST /api/payments/create-order
@@ -87,6 +85,9 @@ export const createPaymentOrder = async (req, res) => {
     console.error('❌ Create Order Error:', error);
     res.status(500).json({ message: 'Failed to create payment order' });
   }
+  console.log('🔑 Merchant ID:', PAYHERE_MERCHANT_ID);
+    console.log('🔑 Hash:', hash);
+    console.log('💰 Amount:', parseFloat(amount).toFixed(2));
 };
 
 // ─────────────────────────────────────────────────────────
