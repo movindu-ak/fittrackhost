@@ -56,7 +56,7 @@ export function AdminDashboard({ onNavigate }) {
     setLoadingTrainers(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/auth/trainers', {
+      const response = await fetch('https://fittrackhost.onrender.com/api/auth/trainers', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -77,7 +77,7 @@ export function AdminDashboard({ onNavigate }) {
     setLoadingAlerts(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/alerts', {
+      const response = await fetch('https://fittrackhost.onrender.com/api/alerts', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -98,7 +98,7 @@ export function AdminDashboard({ onNavigate }) {
   const fetchTodayBookings = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/bookings/today/count', {
+      const response = await fetch('https://fittrackhost.onrender.com/api/bookings/today/count', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -117,7 +117,7 @@ export function AdminDashboard({ onNavigate }) {
     setLoadingBookingsDetails(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/bookings/today/details', {
+      const response = await fetch('https://fittrackhost.onrender.com/api/bookings/today/details', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -186,7 +186,7 @@ export function AdminDashboard({ onNavigate }) {
     
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/auth/register-trainer', {
+      const response = await fetch('https://fittrackhost.onrender.com/api/auth/register-trainer', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

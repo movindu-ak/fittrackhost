@@ -12,6 +12,7 @@ import { Profile } from './pages/Profile';
 import { AdminDashboard } from './pages/AdminDashboard';
 import { AdminLogin } from './pages/AdminLogin';
 import PaymentSuccess from './pages/PaymentSuccess';
+import API_URL from '../config.js';
 
 // Protected Route Component
 const ProtectedRoute = ({ children, allowedRoles }) => {

@@ -616,7 +616,7 @@ export function PaymentCheckout({ membershipId, amount, plan }) {
 
       // Step 1: Create Order
       const { data } = await axios.post(
-        'http://localhost:5000/api/payments/create-order',
+        'https://fittrackhost.onrender.com/api/payments/create-order',
         {
           membershipId,
           amount,
@@ -640,7 +640,7 @@ export function PaymentCheckout({ membershipId, amount, plan }) {
           // Step 2: Verify Payment
           try {
             const verifyRes = await axios.post(
-              'http://localhost:5000/api/payments/verify-payment',
+              'https://fittrackhost.onrender.com/api/payments/verify-payment',
               {
                 razorpayOrderId: response.razorpay_order_id,
                 razorpayPaymentId: response.razorpay_payment_id,
@@ -724,7 +724,7 @@ RAZORPAY_WEBHOOK_SECRET=whsec_xxxxxxxxxxxxxxxx
 
 # URLs
 FRONTEND_URL=http://localhost:5173
-BACKEND_URL=http://localhost:5000
+BACKEND_URL=https://fittrackhost.onrender.com
 
 # Email (Optional, for receipts)
 SMTP_HOST=smtp.gmail.com

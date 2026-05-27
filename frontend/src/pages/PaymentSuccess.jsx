@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = 'https://fittrackhost.onrender.com/api';
 
 export default function PaymentSuccess() {
   const [searchParams] = useSearchParams();

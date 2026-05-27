@@ -566,7 +566,7 @@ RAZORPAY_WEBHOOK_SECRET=your_webhook_secret
 
 # Application URLs
 FRONTEND_URL=http://localhost:5173
-BACKEND_URL=http://localhost:5000
+BACKEND_URL=https://fittrackhost.onrender.com
 
 # Email Configuration (for receipts)
 SMTP_HOST=smtp.gmail.com

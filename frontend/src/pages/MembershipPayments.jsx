@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import { Navigation } from '../components/Navigation';
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = 'https://fittrackhost.onrender.com/api';
 
 // ── Status config ────────────────────────────────────────────
 const STATUS = {

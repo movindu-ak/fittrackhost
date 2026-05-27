@@ -21,7 +21,7 @@ export function Profile() {
   const fetchUserProfile = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/auth/profile', {
+      const response = await fetch('https://fittrackhost.onrender.com/api/auth/profile', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -74,7 +74,7 @@ export function Profile() {
     setSaving(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/auth/update-profile', {
+      const response = await fetch('https://fittrackhost.onrender.com/api/auth/update-profile', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

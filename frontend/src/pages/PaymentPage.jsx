@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import API_URL from '../config.js';
 
-const API_URL = 'http://localhost:5000/api';
+// const API_URL = 'https://fittrackhost.onrender.com/api';
 
 export default function PaymentPage() {
   const location = useLocation();

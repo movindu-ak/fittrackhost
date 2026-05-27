@@ -18,7 +18,7 @@ export const TrainerDashboard = () => {
   const fetchTrainerBookings = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/bookings/trainer', {
+      const response = await fetch('https://fittrackhost.onrender.com/api/bookings/trainer', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -38,7 +38,7 @@ export const TrainerDashboard = () => {
   const fetchBookingSummary = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/bookings/trainer/summary', {
+      const response = await fetch('https://fittrackhost.onrender.com/api/bookings/trainer/summary', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -56,7 +56,7 @@ export const TrainerDashboard = () => {
   const updateBookingStatus = async (bookingId, status) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/bookings/${bookingId}/status`, {
+      const response = await fetch(`https://fittrackhost.onrender.com/api/bookings/${bookingId}/status`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -77,7 +77,7 @@ export const TrainerDashboard = () => {
   const handleConfirmBooking = async (bookingId) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/bookings/${bookingId}/confirm`, {
+      const response = await fetch(`https://fittrackhost.onrender.com/api/bookings/${bookingId}/confirm`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -109,7 +109,7 @@ export const TrainerDashboard = () => {
     
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/bookings/${bookingId}/trainer-cancel`, {
+      const response = await fetch(`https://fittrackhost.onrender.com/api/bookings/${bookingId}/trainer-cancel`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

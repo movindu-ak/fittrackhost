@@ -29,7 +29,7 @@ export function BookingPage() {
     setLoadingTrainers(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/auth/trainers', {
+      const response = await fetch('https://fittrackhost.onrender.com/api/auth/trainers', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -53,7 +53,7 @@ export function BookingPage() {
 
       for (const timeSlot of selectedSlots) {
         const response = await fetch(
-          `http://localhost:5000/api/bookings/trainer/${selectedTrainer}/availability?date=${selectedDate.toISOString()}&timeSlot=${encodeURIComponent(timeSlot)}`,
+          `https://fittrackhost.onrender.com/api/bookings/trainer/${selectedTrainer}/availability?date=${selectedDate.toISOString()}&timeSlot=${encodeURIComponent(timeSlot)}`,
           {
             headers: {
               'Authorization': `Bearer ${token}`
@@ -165,7 +165,7 @@ export function BookingPage() {
           bookingData.trainer = selectedTrainer;
         }
 
-        const response = await fetch('http://localhost:5000/api/bookings', {
+        const response = await fetch('https://fittrackhost.onrender.com/api/bookings', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

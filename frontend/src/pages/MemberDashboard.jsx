@@ -35,7 +35,7 @@ export function MemberDashboard() {
   const fetchUserProfile = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/auth/profile', {
+      const response = await fetch('https://fittrackhost.onrender.com/api/auth/profile', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -53,7 +53,7 @@ export function MemberDashboard() {
   const fetchBookings = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/bookings', {
+      const response = await fetch('https://fittrackhost.onrender.com/api/bookings', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -171,7 +171,7 @@ export function MemberDashboard() {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/bookings/${bookingId}/cancel`, {
+      const response = await fetch(`https://fittrackhost.onrender.com/api/bookings/${bookingId}/cancel`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -201,7 +201,7 @@ export function MemberDashboard() {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/bookings/${bookingId}/complete`, {
+      const response = await fetch(`https://fittrackhost.onrender.com/api/bookings/${bookingId}/complete`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`
