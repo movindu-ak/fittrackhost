@@ -57,14 +57,25 @@ export const MembershipPlanSelection = () => {
     setSelectedPlan(plan);
   };
 
-  const handleProceedToPayment = async () => {
+const handleProceedToPayment = async () => {
   if (!selectedPlan) return;
   setLoading(true);
 
   try {
     const token = localStorage.getItem('token');
 
-    // Step 1: Create membership in backend
+    // Calculate dates based on plan duration
+    const startDate = new Date();
+    const endDate   = new Date();
+
+    if (selectedPlan.id === 'basic') {
+      endDate.setMonth(endDate.getMonth() + 1);       // 1 month
+    } else if (selectedPlan.id === 'premium') {
+      endDate.setMonth(endDate.getMonth() + 3);       // 3 months
+    } else if (selectedPlan.id === 'platinum') {
+      endDate.setFullYear(endDate.getFullYear() + 1); // 1 year
+    }
+
     const res = await fetch(
       'https://fittrackhost.onrender.com/api/memberships',
       {
@@ -74,8 +85,10 @@ export const MembershipPlanSelection = () => {
           'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
-          plan:  selectedPlan.id,
-          price: selectedPlan.price
+          plan:      selectedPlan.id,
+          price:     selectedPlan.price,
+          startDate: startDate.toISOString(),   // ✅ ADD
+          endDate:   endDate.toISOString()      // ✅ ADD
         })
       }
     );
@@ -86,7 +99,6 @@ export const MembershipPlanSelection = () => {
       throw new Error(membership.message || 'Failed to create membership');
     }
 
-    // Step 2: Navigate to payment with correct data
     navigate('/payment', {
       state: {
         membershipId: membership._id,
