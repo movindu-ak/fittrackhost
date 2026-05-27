@@ -86,13 +86,11 @@ export const createPaymentOrder = async (req, res) => {
       notifyUrl:    `${process.env.BACKEND_URL}/api/payments/notify`
     });
 
-  } catch (error) {
+   } catch (error) {
     console.error('❌ Create Order Error:', error);
     res.status(500).json({ message: 'Failed to create payment order' });
   }
-  console.log('🔑 Merchant ID:', PAYHERE_MERCHANT_ID);
-    console.log('🔑 Hash:', hash);
-    console.log('💰 Amount:', parseFloat(amount).toFixed(2));
+  // ✅ Nothing here — logs removed
 };
 
 // ─────────────────────────────────────────────────────────
