@@ -84,7 +84,7 @@ export const SignUp = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     // Validate form
     const newErrors = validateForm();
     if (Object.keys(newErrors).length > 0) {
@@ -121,7 +121,7 @@ export const SignUp = () => {
 
       // Show success message
       setSuccessMessage('Registration successful!');
-      
+
       // Clear form
       setFormData({
         name: '',
@@ -251,9 +251,8 @@ export const SignUp = () => {
                   name="ageRange"
                   value={formData.ageRange}
                   onChange={handleChange}
-                  className={`w-full bg-neutral-800 border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-green-500 transition ${
-                    errors.ageRange ? 'border-red-500' : 'border-neutral-700'
-                  }`}
+                  className={`w-full bg-neutral-800 border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-green-500 transition ${errors.ageRange ? 'border-red-500' : 'border-neutral-700'
+                    }`}
                 >
                   <option value="">Select your age range</option>
                   <option value="10-15">10 - 15 years</option>
@@ -281,11 +280,10 @@ export const SignUp = () => {
                         setErrors(prev => ({ ...prev, gender: '' }));
                       }
                     }}
-                    className={`flex-1 py-3 rounded-lg border-2 font-semibold transition-all ${
-                      formData.gender === 'male'
+                    className={`flex-1 py-3 rounded-lg border-2 font-semibold transition-all ${formData.gender === 'male'
                         ? 'border-green-500 bg-green-500/10 text-green-400'
                         : 'border-neutral-700 bg-neutral-800 text-neutral-300 hover:border-neutral-600'
-                    }`}
+                      }`}
                   >
                     ✓ Male
                   </button>
@@ -297,11 +295,10 @@ export const SignUp = () => {
                         setErrors(prev => ({ ...prev, gender: '' }));
                       }
                     }}
-                    className={`flex-1 py-3 rounded-lg border-2 font-semibold transition-all ${
-                      formData.gender === 'female'
+                    className={`flex-1 py-3 rounded-lg border-2 font-semibold transition-all ${formData.gender === 'female'
                         ? 'border-green-500 bg-green-500/10 text-green-400'
                         : 'border-neutral-700 bg-neutral-800 text-neutral-300 hover:border-neutral-600'
-                    }`}
+                      }`}
                   >
                     ✓ Female
                   </button>
@@ -356,8 +353,8 @@ export const SignUp = () => {
             <div className="mt-6 pt-6 border-t border-neutral-800 text-center">
               <p className="text-neutral-400 text-sm">
                 Do you have an account?{' '}
-                <Link 
-                  to="/login" 
+                <Link
+                  to="/login"
                   className="text-green-400 font-semibold hover:text-green-300 transition"
                 >
                   Login

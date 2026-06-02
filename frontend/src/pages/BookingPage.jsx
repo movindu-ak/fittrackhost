@@ -34,7 +34,7 @@ export function BookingPage() {
           'Authorization': `Bearer ${token}`
         }
       });
-      
+
       if (response.ok) {
         const data = await response.json();
         setTrainers(data);
@@ -60,7 +60,7 @@ export function BookingPage() {
             }
           }
         );
-        
+
         if (response.ok) {
           const data = await response.json();
           availabilityData[timeSlot] = data;
@@ -100,36 +100,36 @@ export function BookingPage() {
   const isTimeSlotPassed = (timeSlot) => {
     const now = new Date();
     const selectedDateObj = new Date(selectedDate);
-    
+
     // Only check for today's date
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     selectedDateObj.setHours(0, 0, 0, 0);
-    
+
     if (selectedDateObj.getTime() !== today.getTime()) {
       return false; // Not today, so time slot is not passed
     }
-    
+
     // Extract end time from timeSlot (e.g., "6:00 AM - 7:30 AM")
     const timeMatch = timeSlot.match(/- (\d{1,2}):(\d{2}) (AM|PM)/);
     if (timeMatch) {
       let hours = parseInt(timeMatch[1]);
       const minutes = parseInt(timeMatch[2]);
       const period = timeMatch[3];
-      
+
       // Convert to 24-hour format
       if (period === 'PM' && hours !== 12) {
         hours += 12;
       } else if (period === 'AM' && hours === 12) {
         hours = 0;
       }
-      
+
       const slotEndTime = new Date();
       slotEndTime.setHours(hours, minutes, 0, 0);
-      
+
       return now >= slotEndTime;
     }
-    
+
     return false;
   };
 
@@ -151,7 +151,7 @@ export function BookingPage() {
 
     try {
       const token = localStorage.getItem('token');
-      
+
       // Create multiple bookings for each selected slot
       const bookingPromises = selectedSlots.map(async (timeSlot) => {
         const bookingData = {
@@ -186,13 +186,12 @@ export function BookingPage() {
 
       const trainerName = trainers.find(t => t._id === selectedTrainer)?.name;
       alert(
-        `${selectedSlots.length} booking(s) confirmed! ${
-          bookingType === 'trainer' && trainerName
-            ? `with ${trainerName}`
-            : ''
+        `${selectedSlots.length} booking(s) confirmed! ${bookingType === 'trainer' && trainerName
+          ? `with ${trainerName}`
+          : ''
         }\n\nRedirecting to your dashboard...`
       );
-      
+
       // Redirect to dashboard after successful booking
       setTimeout(() => {
         navigate('/member-dashboard');
@@ -217,17 +216,15 @@ export function BookingPage() {
         <div className="inline-flex bg-neutral-800 rounded-xl p-2 mb-8">
           <button
             onClick={() => setBookingType('workout')}
-            className={`px-6 py-2 rounded-lg ${
-              bookingType === 'workout' ? 'bg-green-500 text-black' : 'text-neutral-400'
-            }`}
+            className={`px-6 py-2 rounded-lg ${bookingType === 'workout' ? 'bg-green-500 text-black' : 'text-neutral-400'
+              }`}
           >
             Workout Slot
           </button>
           <button
             onClick={() => setBookingType('trainer')}
-            className={`px-6 py-2 rounded-lg ${
-              bookingType === 'trainer' ? 'bg-green-500 text-black' : 'text-neutral-400'
-            }`}
+            className={`px-6 py-2 rounded-lg ${bookingType === 'trainer' ? 'bg-green-500 text-black' : 'text-neutral-400'
+              }`}
           >
             Personal Trainer
           </button>
@@ -241,13 +238,13 @@ export function BookingPage() {
               <div className="flex justify-between mb-6">
                 <h2 className="text-xl text-white">{monthName}</h2>
                 <div className="space-x-2">
-                  <button 
+                  <button
                     onClick={() => setSelectedDate(new Date(selectedDate.getFullYear(), selectedDate.getMonth() - 1, 1))}
                     className="text-white hover:text-green-400"
                   >
                     <ChevronLeft />
                   </button>
-                  <button 
+                  <button
                     onClick={() => setSelectedDate(new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 1))}
                     className="text-white hover:text-green-400"
                   >
@@ -267,27 +264,26 @@ export function BookingPage() {
               <div className="grid grid-cols-7 gap-2">
                 {days.map((day, index) => {
                   if (!day) return <div key={index} />;
-                  
+
                   // Check if day is in the past
                   const today = new Date();
                   today.setHours(0, 0, 0, 0);
                   const dayDate = new Date(day);
                   dayDate.setHours(0, 0, 0, 0);
                   const isPast = dayDate < today;
-                  
+
                   return (
                     <button
                       key={index}
                       onClick={() => !isPast && setSelectedDate(day)}
                       disabled={isPast}
-                      className={`p-2 rounded ${
-                        isPast
+                      className={`p-2 rounded ${isPast
                           ? 'text-neutral-600 cursor-not-allowed opacity-50'
                           : day.getDate() === selectedDate.getDate() &&
                             day.getMonth() === selectedDate.getMonth()
-                          ? 'bg-green-500 text-black font-semibold'
-                          : 'text-white hover:bg-neutral-700'
-                      }`}
+                            ? 'bg-green-500 text-black font-semibold'
+                            : 'text-white hover:bg-neutral-700'
+                        }`}
                     >
                       {day.getDate()}
                     </button>
@@ -311,7 +307,7 @@ export function BookingPage() {
                   const isSelected = selectedSlots.includes(slot.time);
                   const isPassed = isTimeSlotPassed(slot.time);
                   const isDisabled = slot.available === 0 || isPassed;
-                  
+
                   return (
                     <button
                       key={index}
@@ -330,13 +326,12 @@ export function BookingPage() {
                         }
                       }}
                       disabled={isDisabled}
-                      className={`p-4 rounded-lg border text-left transition-all ${
-                        isSelected
+                      className={`p-4 rounded-lg border text-left transition-all ${isSelected
                           ? 'bg-green-500/20 border-green-500'
                           : isDisabled
-                          ? 'bg-neutral-900/50 border-neutral-700 opacity-50 cursor-not-allowed'
-                          : 'bg-neutral-900 border-neutral-700 hover:border-neutral-600'
-                      }`}
+                            ? 'bg-neutral-900/50 border-neutral-700 opacity-50 cursor-not-allowed'
+                            : 'bg-neutral-900 border-neutral-700 hover:border-neutral-600'
+                        }`}
                     >
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-2">
@@ -348,16 +343,15 @@ export function BookingPage() {
                         )}
                       </div>
                       <div className="flex items-center justify-between text-sm">
-                        <span className={`${
-                          isPassed ? 'text-neutral-500' :
-                          slot.crowd === 'low' ? 'text-green-400' :
-                          slot.crowd === 'medium' ? 'text-yellow-400' :
-                          'text-red-400'
-                        }`}>
+                        <span className={`${isPassed ? 'text-neutral-500' :
+                            slot.crowd === 'low' ? 'text-green-400' :
+                              slot.crowd === 'medium' ? 'text-yellow-400' :
+                                'text-red-400'
+                          }`}>
                           {isPassed ? '🔒 Passed' :
-                           slot.crowd === 'low' ? '🟢 Low' : 
-                           slot.crowd === 'medium' ? '🟡 Medium' : 
-                           '🔴 High'} {!isPassed && 'crowd'}
+                            slot.crowd === 'low' ? '🟢 Low' :
+                              slot.crowd === 'medium' ? '🟡 Medium' :
+                                '🔴 High'} {!isPassed && 'crowd'}
                         </span>
                         <span className="text-neutral-400">
                           {slot.available}/{slot.total} spots
@@ -389,11 +383,10 @@ export function BookingPage() {
                       <button
                         key={trainer._id}
                         onClick={() => setSelectedTrainer(trainer._id)}
-                        className={`w-full text-left p-4 rounded-lg border transition-all ${
-                          selectedTrainer === trainer._id
+                        className={`w-full text-left p-4 rounded-lg border transition-all ${selectedTrainer === trainer._id
                             ? 'bg-green-500/20 border-green-500'
                             : 'bg-neutral-800 border-neutral-700 hover:border-neutral-600'
-                        }`}
+                          }`}
                       >
                         <div className="flex items-center justify-between gap-3">
                           <div className="flex items-center gap-3">
@@ -409,7 +402,7 @@ export function BookingPage() {
                   </div>
                 )}
               </div>
-              
+
               <div className="bg-neutral-900 rounded-xl p-6">
                 <h3 className="text-lg text-white mb-4">Booking Summary</h3>
                 <div className="space-y-2 mb-6">
@@ -437,12 +430,11 @@ export function BookingPage() {
                               </button>
                             </div>
                             {selectedTrainer && trainerAvailability[slot] && (
-                              <div className={`mt-1 text-xs ${
-                                trainerAvailability[slot].available 
-                                  ? 'text-green-400' 
+                              <div className={`mt-1 text-xs ${trainerAvailability[slot].available
+                                  ? 'text-green-400'
                                   : 'text-red-400'
-                              }`}>
-                                {trainerAvailability[slot].available 
+                                }`}>
+                                {trainerAvailability[slot].available
                                   ? `✓ ${trainerAvailability[slot].spotsRemaining} of 5 spots available`
                                   : '✗ Fully booked (5/5)'}
                               </div>
@@ -461,7 +453,7 @@ export function BookingPage() {
                     </div>
                   )}
                 </div>
-                
+
                 <button
                   onClick={handleBooking}
                   disabled={selectedSlots.length === 0 || !selectedTrainer}

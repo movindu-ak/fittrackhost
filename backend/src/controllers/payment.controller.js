@@ -255,3 +255,186 @@ export const getPaymentHistory = async (req, res) => {
     res.status(500).json({ message: 'Failed to fetch payment history' });
   }
 };
+
+// ─────────────────────────────────────────────────────────
+// 5. TODAY'S CAPTURED PAYMENTS (Admin)
+// GET /api/payments/admin/today
+// ─────────────────────────────────────────────────────────
+export const getTodayRevenue = async (req, res) => {
+  try {
+    const page  = parseInt(req.query.page)  || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip  = (page - 1) * limit;
+
+    const now        = new Date();
+    const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
+    const endOfDay   = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+
+    const [payments, totalCount, aggResult] = await Promise.all([
+      Payment.find({ status: 'captured', capturedAt: { $gte: startOfDay, $lte: endOfDay } })
+        .populate('user', 'name email phone')
+        .populate('membershipId', 'plan')
+        .sort({ capturedAt: -1 })
+        .skip(skip)
+        .limit(limit),
+      Payment.countDocuments({ status: 'captured', capturedAt: { $gte: startOfDay, $lte: endOfDay } }),
+      Payment.aggregate([
+        { $match: { status: 'captured', capturedAt: { $gte: startOfDay, $lte: endOfDay } } },
+        { $group: { _id: null, total: { $sum: '$amount' } } }
+      ])
+    ]);
+
+    res.json({
+      payments,
+      total:       aggResult[0]?.total || 0,
+      count:       totalCount,
+      pages:       Math.ceil(totalCount / limit),
+      currentPage: page
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+
+// ─────────────────────────────────────────────────────────
+// 6. PENDING (CREATED) PAYMENTS (Admin)
+// GET /api/payments/admin/pending
+// ─────────────────────────────────────────────────────────
+export const getPendingPayments = async (req, res) => {
+  try {
+    const payments = await Payment.find({ status: 'created' })
+      .populate('user', 'name email phone')
+      .populate('membershipId', 'plan startDate endDate')
+      .sort({ createdAt: -1 });
+
+    res.json({ payments, count: payments.length });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// ─────────────────────────────────────────────────────────
+// 7. ACCEPT PAYMENT (Admin) — created → captured
+// PATCH /api/payments/admin/:id/accept
+// ─────────────────────────────────────────────────────────
+export const acceptPayment = async (req, res) => {
+  try {
+    const payment = await Payment.findById(req.params.id);
+    if (!payment) return res.status(404).json({ message: 'Payment not found' });
+    if (payment.status !== 'created') {
+      return res.status(400).json({ message: `Payment is already ${payment.status}` });
+    }
+
+    // Mark payment as captured
+    payment.status     = 'captured';
+    payment.capturedAt = new Date();
+    await payment.save();
+
+    // Activate linked membership if present
+    if (payment.membershipId) {
+      await Membership.findByIdAndUpdate(payment.membershipId, {
+        paymentStatus: 'paid',
+        paymentId:     payment._id,
+        paymentDate:   new Date(),
+        status:        'active'
+      });
+    }
+
+    res.json({ success: true, payment });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// ─────────────────────────────────────────────────────────
+// 8. DAILY REVENUE SUMMARY (Admin)
+// GET /api/payments/admin/daily-summary
+// ─────────────────────────────────────────────────────────
+export const getDailyRevenueSummary = async (req, res) => {
+  try {
+    const page  = parseInt(req.query.page)  || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip  = (page - 1) * limit;
+
+    const pipeline = [
+      { $match: { status: 'captured' } },
+      {
+        $group: {
+          _id: { $dateToString: { format: '%Y-%m-%d', date: '$capturedAt' } },
+          totalRevenue: { $sum: '$amount' },
+          transactionCount: { $sum: 1 }
+        }
+      },
+      { $sort: { _id: -1 } },
+      {
+        $facet: {
+          metadata: [{ $count: "total" }],
+          data: [{ $skip: skip }, { $limit: limit }]
+        }
+      }
+    ];
+
+    const result = await Payment.aggregate(pipeline);
+    const totalCount = result[0].metadata[0]?.total || 0;
+    const days = result[0].data.map(d => ({
+      date: d._id,
+      totalRevenue: d.totalRevenue,
+      transactionCount: d.transactionCount
+    }));
+
+    res.json({
+      days,
+      count: totalCount,
+      pages: Math.ceil(totalCount / limit),
+      currentPage: page
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// ─────────────────────────────────────────────────────────
+// 9. PAYMENTS BY DATE (Admin)
+// GET /api/payments/admin/by-date?date=YYYY-MM-DD
+// ─────────────────────────────────────────────────────────
+export const getPaymentsByDate = async (req, res) => {
+  try {
+    const { date } = req.query; // YYYY-MM-DD
+    if (!date) return res.status(400).json({ message: 'Date is required' });
+
+    const page  = parseInt(req.query.page)  || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip  = (page - 1) * limit;
+
+    // Use local time matching getTodayRevenue logic
+    const [year, month, day] = date.split('-');
+    const localStart = new Date(year, month - 1, day, 0, 0, 0, 0);
+    const localEnd   = new Date(year, month - 1, day, 23, 59, 59, 999);
+
+    const [payments, totalCount, aggResult] = await Promise.all([
+      Payment.find({ status: 'captured', capturedAt: { $gte: localStart, $lte: localEnd } })
+        .populate('user', 'name email phone')
+        .populate('membershipId', 'plan')
+        .sort({ capturedAt: -1 })
+        .skip(skip)
+        .limit(limit),
+      Payment.countDocuments({ status: 'captured', capturedAt: { $gte: localStart, $lte: localEnd } }),
+      Payment.aggregate([
+        { $match: { status: 'captured', capturedAt: { $gte: localStart, $lte: localEnd } } },
+        { $group: { _id: null, total: { $sum: '$amount' } } }
+      ])
+    ]);
+
+    res.json({
+      payments,
+      total: aggResult[0]?.total || 0,
+      count: totalCount,
+      pages: Math.ceil(totalCount / limit),
+      currentPage: page
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+

@@ -51,9 +51,9 @@ const STATUS = {
 
 // ── Plan config ──────────────────────────────────────────────
 const PLAN_COLORS = {
-  basic:   { grad: 'from-sky-500 to-blue-600',    badge: 'bg-sky-500/20 text-sky-300 border-sky-500/30' },
+  basic: { grad: 'from-sky-500 to-blue-600', badge: 'bg-sky-500/20 text-sky-300 border-sky-500/30' },
   premium: { grad: 'from-violet-500 to-purple-600', badge: 'bg-violet-500/20 text-violet-300 border-violet-500/30' },
-  elite:   { grad: 'from-amber-400 to-orange-500',  badge: 'bg-amber-500/20 text-amber-300 border-amber-500/30' },
+  elite: { grad: 'from-amber-400 to-orange-500', badge: 'bg-amber-500/20 text-amber-300 border-amber-500/30' },
   default: { grad: 'from-neutral-500 to-neutral-600', badge: 'bg-neutral-500/20 text-neutral-300 border-neutral-500/30' }
 };
 
@@ -75,9 +75,9 @@ const formatLKR = (amount) =>
 function StatBox({ icon: Icon, label, value, sub, accent }) {
   const accents = {
     emerald: 'border-emerald-500/30 from-emerald-500/10',
-    blue:    'border-blue-500/30 from-blue-500/10',
-    amber:   'border-amber-500/30 from-amber-500/10',
-    purple:  'border-purple-500/30 from-purple-500/10',
+    blue: 'border-blue-500/30 from-blue-500/10',
+    amber: 'border-amber-500/30 from-amber-500/10',
+    purple: 'border-purple-500/30 from-purple-500/10',
   };
   return (
     <div className={`relative rounded-2xl border bg-gradient-to-br ${accents[accent]} to-transparent p-5 overflow-hidden`}>
@@ -172,10 +172,10 @@ function PaymentRow({ payment }) {
       {expanded && (
         <div className="px-4 pb-4 pt-0 border-t border-neutral-700/50">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-3">
-            <Detail label="Payment ID"     value={payment.payherePaymentId || '—'} mono />
-            <Detail label="Order ID"       value={payment.orderId || '—'}          mono />
-            <Detail label="Currency"       value={payment.currency || 'LKR'} />
-            <Detail label="Method"         value={payment.paymentMethod || '—'} />
+            <Detail label="Payment ID" value={payment.payherePaymentId || '—'} mono />
+            <Detail label="Order ID" value={payment.orderId || '—'} mono />
+            <Detail label="Currency" value={payment.currency || 'LKR'} />
+            <Detail label="Method" value={payment.paymentMethod || '—'} />
             {payment.capturedAt && (
               <Detail label="Paid At" value={formatDate(payment.capturedAt)} />
             )}
@@ -183,7 +183,7 @@ function PaymentRow({ payment }) {
               <Detail label="Membership Start" value={formatDate(payment.membershipId.startDate)} />
             )}
             {payment.membershipId?.endDate && (
-              <Detail label="Membership End"   value={formatDate(payment.membershipId.endDate)} />
+              <Detail label="Membership End" value={formatDate(payment.membershipId.endDate)} />
             )}
             {payment.membershipId?.status && (
               <Detail label="Membership Status" value={payment.membershipId.status} capitalize />
@@ -245,9 +245,9 @@ function EmptyState({ navigate }) {
       {/* Feature pills */}
       <div className="flex flex-wrap justify-center gap-2 mb-8">
         {[
-          { icon: Zap,      label: 'Instant Activation' },
-          { icon: Shield,   label: 'Secure Payments' },
-          { icon: Calendar, label: 'Flexible Plans'  }
+          { icon: Zap, label: 'Instant Activation' },
+          { icon: Shield, label: 'Secure Payments' },
+          { icon: Calendar, label: 'Flexible Plans' }
         ].map(({ icon: Icon, label }) => (
           <div key={label}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-full
@@ -302,13 +302,13 @@ function Skeleton() {
 // ─────────────────────────────────────────────────────────────
 export default function MembershipPayments() {
   const navigate = useNavigate();
-  const [payments, setPayments]     = useState([]);
-  const [loading, setLoading]       = useState(true);
-  const [error, setError]           = useState('');
-  const [page, setPage]             = useState(1);
+  const [payments, setPayments] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [total, setTotal]           = useState(0);
-  const [filter, setFilter]         = useState('all');   // all | captured | pending | failed
+  const [total, setTotal] = useState(0);
+  const [filter, setFilter] = useState('all');   // all | captured | pending | failed
 
   const getAuthHeader = () => ({
     headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
@@ -342,9 +342,9 @@ export default function MembershipPayments() {
     : payments.filter((p) => p.status === filter);
 
   // Compute stats from loaded payments
-  const totalPaid    = payments.filter((p) => p.status === 'captured').reduce((s, p) => s + p.amount, 0);
-  const lastPayment  = payments[0];
-  const activeCount  = payments.filter((p) => p.membershipId?.status === 'active').length;
+  const totalPaid = payments.filter((p) => p.status === 'captured').reduce((s, p) => s + p.amount, 0);
+  const lastPayment = payments[0];
+  const activeCount = payments.filter((p) => p.membershipId?.status === 'active').length;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-neutral-900 to-neutral-800">
@@ -405,10 +405,10 @@ export default function MembershipPayments() {
         {!loading && payments.length > 0 && (
           <div className="flex gap-2 mb-4 overflow-x-auto pb-1">
             {[
-              { key: 'all',      label: 'All' },
+              { key: 'all', label: 'All' },
               { key: 'captured', label: 'Paid' },
-              { key: 'pending',  label: 'Pending' },
-              { key: 'failed',   label: 'Failed' },
+              { key: 'pending', label: 'Pending' },
+              { key: 'failed', label: 'Failed' },
               { key: 'refunded', label: 'Refunded' }
             ].map(({ key, label }) => (
               <button
@@ -417,9 +417,9 @@ export default function MembershipPayments() {
                 className={`px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap
                            transition-all duration-150 border
                            ${filter === key
-                             ? 'bg-white text-black border-white'
-                             : 'bg-transparent text-neutral-400 border-neutral-700 hover:border-neutral-500 hover:text-white'
-                           }`}
+                    ? 'bg-white text-black border-white'
+                    : 'bg-transparent text-neutral-400 border-neutral-700 hover:border-neutral-500 hover:text-white'
+                  }`}
               >
                 {label}
                 {key !== 'all' && (
@@ -495,7 +495,7 @@ export default function MembershipPayments() {
                   <div className="flex gap-1">
                     {Array.from({ length: totalPages }, (_, i) => i + 1)
                       .filter((n) => n === 1 || n === totalPages ||
-                                     (n >= page - 1 && n <= page + 1))
+                        (n >= page - 1 && n <= page + 1))
                       .reduce((acc, n, idx, arr) => {
                         if (idx > 0 && n - arr[idx - 1] > 1) {
                           acc.push('...');
@@ -513,9 +513,9 @@ export default function MembershipPayments() {
                             onClick={() => setPage(n)}
                             className={`w-9 h-9 rounded-xl text-sm font-medium transition
                                         ${page === n
-                                          ? 'bg-emerald-500 text-black'
-                                          : 'bg-neutral-800 border border-neutral-700 text-white hover:bg-neutral-700'
-                                        }`}
+                                ? 'bg-emerald-500 text-black'
+                                : 'bg-neutral-800 border border-neutral-700 text-white hover:bg-neutral-700'
+                              }`}
                           >
                             {n}
                           </button>

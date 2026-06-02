@@ -23,7 +23,7 @@ export const TrainerDashboard = () => {
           'Authorization': `Bearer ${token}`
         }
       });
-      
+
       if (response.ok) {
         const data = await response.json();
         setBookings(data);
@@ -43,7 +43,7 @@ export const TrainerDashboard = () => {
           'Authorization': `Bearer ${token}`
         }
       });
-      
+
       if (response.ok) {
         const data = await response.json();
         setBookingSummary(data);
@@ -64,7 +64,7 @@ export const TrainerDashboard = () => {
         },
         body: JSON.stringify({ status })
       });
-      
+
       if (response.ok) {
         fetchTrainerBookings();
         fetchBookingSummary();
@@ -83,7 +83,7 @@ export const TrainerDashboard = () => {
           'Authorization': `Bearer ${token}`
         }
       });
-      
+
       if (response.ok) {
         fetchTrainerBookings();
         fetchBookingSummary();
@@ -96,17 +96,17 @@ export const TrainerDashboard = () => {
   const handleCancelBooking = async (bookingId) => {
     // Prompt for cancellation reason
     const cancelReason = prompt('Please provide a reason for cancellation (minimum 10 characters):');
-    
+
     if (cancelReason === null) {
       // User clicked cancel
       return;
     }
-    
+
     if (!cancelReason || cancelReason.trim().length < 10) {
       alert('Cancellation reason must be at least 10 characters long.');
       return;
     }
-    
+
     try {
       const token = localStorage.getItem('token');
       const response = await fetch(`https://fittrackhost.onrender.com/api/bookings/${bookingId}/trainer-cancel`, {
@@ -117,7 +117,7 @@ export const TrainerDashboard = () => {
         },
         body: JSON.stringify({ cancelReason: cancelReason.trim() })
       });
-      
+
       if (response.ok) {
         fetchTrainerBookings();
         fetchBookingSummary();
@@ -170,7 +170,7 @@ export const TrainerDashboard = () => {
   // Filter bookings by status
   const today = new Date();
   today.setHours(0, 0, 0, 0); // Set to start of day for accurate comparison
-  
+
   const upcomingBookings = bookings.filter(b => {
     const bookingDate = new Date(b.date);
     bookingDate.setHours(0, 0, 0, 0);
@@ -257,27 +257,25 @@ export const TrainerDashboard = () => {
                             <Clock className="h-4 w-4 mr-2 text-purple-400" />
                             <span className="text-white font-medium text-sm">{slot.timeSlot}</span>
                           </div>
-                          <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                            slot.count >= 5 
-                              ? 'bg-red-500/20 text-red-400' 
-                              : slot.count >= 3 
-                              ? 'bg-yellow-500/20 text-yellow-400' 
-                              : 'bg-green-500/20 text-green-400'
-                          }`}>
+                          <span className={`px-2 py-1 rounded-full text-xs font-semibold ${slot.count >= 5
+                              ? 'bg-red-500/20 text-red-400'
+                              : slot.count >= 3
+                                ? 'bg-yellow-500/20 text-yellow-400'
+                                : 'bg-green-500/20 text-green-400'
+                            }`}>
                             {slot.count}/{slot.capacity}
                           </span>
                         </div>
-                        
+
                         <div className="mb-3">
                           <div className="w-full bg-neutral-700 rounded-full h-2">
                             <div
-                              className={`h-2 rounded-full transition-all ${
-                                slot.count >= 5 
-                                  ? 'bg-red-500' 
-                                  : slot.count >= 3 
-                                  ? 'bg-yellow-500' 
-                                  : 'bg-green-500'
-                              }`}
+                              className={`h-2 rounded-full transition-all ${slot.count >= 5
+                                  ? 'bg-red-500'
+                                  : slot.count >= 3
+                                    ? 'bg-yellow-500'
+                                    : 'bg-green-500'
+                                }`}
                               style={{ width: `${(slot.count / slot.capacity) * 100}%` }}
                             />
                           </div>
@@ -289,11 +287,10 @@ export const TrainerDashboard = () => {
                             <div key={member.id} className="flex items-center text-xs text-gray-300">
                               <span className="w-4 text-gray-500">{idx + 1}.</span>
                               <span className="truncate">{member.name}</span>
-                              <span className={`ml-auto px-2 py-0.5 rounded text-xs ${
-                                member.status === 'confirmed' 
-                                  ? 'bg-blue-500/20 text-blue-400' 
+                              <span className={`ml-auto px-2 py-0.5 rounded text-xs ${member.status === 'confirmed'
+                                  ? 'bg-blue-500/20 text-blue-400'
                                   : 'bg-yellow-500/20 text-yellow-400'
-                              }`}>
+                                }`}>
                                 {member.status === 'confirmed' ? '✓' : '⏳'}
                               </span>
                             </div>
@@ -358,7 +355,7 @@ export const TrainerDashboard = () => {
                           {getStatusLabel(booking.status)}
                         </span>
                       </div>
-                      
+
                       <div className="flex flex-wrap gap-4 text-sm">
                         <div className="flex items-center text-gray-300">
                           <Calendar className="h-4 w-4 mr-2 text-blue-400" />

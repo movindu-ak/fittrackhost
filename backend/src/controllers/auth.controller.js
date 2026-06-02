@@ -1,5 +1,7 @@
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
+import { Payment } from '../models/Payment.js';
+import Membership from '../models/Membership.js';
 
 // Generate JWT Token
 const generateToken = (id) => {
@@ -244,6 +246,111 @@ export const updateProfile = async (req, res) => {
       ageRange: user.ageRange,
       gender: user.gender,
       createdAt: user.createdAt
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+// @desc    Get admin stats (member count + today's revenue)
+// @route   GET /api/auth/stats
+// @access  Private/Admin
+export const getAdminStats = async (req, res) => {
+  try {
+    const now = new Date();
+    const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
+    const endOfDay   = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+
+    const [memberCount, todayRevenue, membershipDistributionData, monthlyRevenueRaw] = await Promise.all([
+      // Total registered members (role = 'member')
+      User.countDocuments({ role: 'member' }),
+
+      // Sum of captured payments created today
+      Payment.aggregate([
+        {
+          $match: {
+            status: 'captured',
+            createdAt: { $gte: startOfDay, $lte: endOfDay }
+          }
+        },
+        { $group: { _id: null, total: { $sum: '$amount' } } }
+      ]),
+
+      // Membership Distribution (1 per member, newest active plan)
+      Membership.aggregate([
+        { $match: { status: 'active' } },
+        { $sort: { createdAt: -1 } },
+        { $group: { _id: '$user', plan: { $first: '$plan' } } },
+        { $group: { _id: '$plan', value: { $sum: 1 } } }
+      ]),
+
+      // Monthly Revenue
+      Payment.aggregate([
+        { $match: { status: 'captured' } },
+        {
+          $group: {
+            _id: {
+              year: { $year: '$capturedAt' },
+              month: { $month: '$capturedAt' }
+            },
+            revenue: { $sum: '$amount' }
+          }
+        },
+        { $sort: { '_id.year': -1, '_id.month': -1 } },
+        { $limit: 7 },
+        { $sort: { '_id.year': 1, '_id.month': 1 } }
+      ])
+    ]);
+
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const monthlyRevenue = monthlyRevenueRaw.map(item => ({
+      month: monthNames[item._id.month - 1],
+      revenue: item.revenue
+    }));
+
+    res.json({
+      memberCount,
+      todayRevenue: todayRevenue[0]?.total || 0,
+      membershipDistribution: membershipDistributionData,
+      monthlyRevenue
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Get all registered members (paginated + searchable)
+// @route   GET /api/auth/members?page=1&limit=10&search=
+// @access  Private/Admin
+export const getMembers = async (req, res) => {
+  try {
+    const page   = parseInt(req.query.page)   || 1;
+    const limit  = parseInt(req.query.limit)  || 10;
+    const search = (req.query.search || '').trim();
+    const skip   = (page - 1) * limit;
+
+    // Build search filter
+    const filter = { role: 'member' };
+    if (search) {
+      filter.$or = [
+        { name:  { $regex: search, $options: 'i' } },
+        { email: { $regex: search, $options: 'i' } }
+      ];
+    }
+
+    const [members, total] = await Promise.all([
+      User.find(filter)
+        .select('name email phone ageRange gender createdAt')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit),
+      User.countDocuments(filter)
+    ]);
+
+    res.json({
+      members,
+      total,
+      pages: Math.ceil(total / limit),
+      currentPage: page
     });
   } catch (error) {
     res.status(500).json({ message: error.message });

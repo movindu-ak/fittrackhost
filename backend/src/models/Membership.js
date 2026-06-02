@@ -21,7 +21,7 @@ const membershipSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['active', 'expired', 'cancelled'],
+    enum: ['active', 'expired', 'cancelled', 'queued'],
     default: 'active'
   },
   price: {
@@ -40,23 +40,30 @@ const membershipSchema = new mongoose.Schema({
 
   // ADD these fields to your existing Membership schema:
 
-paymentId: {
-  type: mongoose.Schema.Types.ObjectId,
-  ref: 'Payment',
-  default: null
-},
-paymentDate: {
-  type: Date,
-  default: null
-},
-paymentMethod: {
-  type: String,
-  default: null
-},
-renewalDueDate: {
-  type: Date,
-  default: null
-}
+  paymentId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Payment',
+    default: null
+  },
+  paymentDate: {
+    type: Date,
+    default: null
+  },
+  paymentMethod: {
+    type: String,
+    default: null
+  },
+  renewalDueDate: {
+    type: Date,
+    default: null
+  },
+
+  // Links this membership to the one it follows (for queued renewals)
+  previousMembershipId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Membership',
+    default: null
+  }
 });
 
 const Membership = mongoose.model('Membership', membershipSchema);

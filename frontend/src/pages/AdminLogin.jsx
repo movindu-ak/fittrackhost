@@ -47,7 +47,7 @@ export const AdminLogin = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     // Validate form
     const newErrors = validateForm();
     if (Object.keys(newErrors).length > 0) {

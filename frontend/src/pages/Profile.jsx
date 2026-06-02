@@ -14,6 +14,10 @@ export function Profile() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
 
+  // Get user role from local storage to display correct navigation
+  const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+  const userRole = currentUser.role || 'member';
+
   useEffect(() => {
     fetchUserProfile();
   }, []);
@@ -124,7 +128,7 @@ export function Profile() {
   if (loading) {
     return (
       <div className="min-h-screen">
-        <Navigation currentPage="profile" role="member" />
+        <Navigation currentPage="profile" role={userRole} />
         <div className="flex items-center justify-center min-h-[60vh]">
           <p className="text-neutral-400">Loading profile...</p>
         </div>
@@ -134,15 +138,14 @@ export function Profile() {
 
   return (
     <div className="min-h-screen">
-      <Navigation currentPage="profile" role="member" />
+      <Navigation currentPage="profile" role={userRole} />
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {message && (
-          <div className={`mb-6 p-4 rounded-lg border ${
-            message.includes('success')
+          <div className={`mb-6 p-4 rounded-lg border ${message.includes('success')
               ? 'bg-green-500/10 border-green-500/30 text-green-400'
               : 'bg-red-500/10 border-red-500/30 text-red-400'
-          }`}>
+            }`}>
             {message}
           </div>
         )}
@@ -240,9 +243,8 @@ export function Profile() {
                           setEditData(prev => ({ ...prev, ageRange: e.target.value }));
                           if (errors.ageRange) setErrors(prev => ({ ...prev, ageRange: '' }));
                         }}
-                        className={`w-full bg-neutral-800 border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-green-500 transition ${
-                          errors.ageRange ? 'border-red-500' : 'border-neutral-700'
-                        }`}
+                        className={`w-full bg-neutral-800 border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-green-500 transition ${errors.ageRange ? 'border-red-500' : 'border-neutral-700'
+                          }`}
                       >
                         <option value="">Select your age range</option>
                         <option value="10-15">10 - 15 years</option>

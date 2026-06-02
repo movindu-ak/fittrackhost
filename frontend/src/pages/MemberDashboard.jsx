@@ -77,8 +77,8 @@ export function MemberDashboard() {
         const monthlyCount = data.filter(booking => {
           const bookingDate = new Date(booking.date);
           return bookingDate.getMonth() === currentMonth &&
-                 bookingDate.getFullYear() === currentYear &&
-                 (booking.status === 'confirmed' || booking.status === 'completed');
+            bookingDate.getFullYear() === currentYear &&
+            (booking.status === 'confirmed' || booking.status === 'completed');
         }).length;
         setMonthlyWorkouts(monthlyCount);
 
@@ -113,7 +113,7 @@ export function MemberDashboard() {
           if (foundRecent) {
             for (const workoutDate of uniqueDates) {
               if (workoutDate.getTime() === currentCheckDate.getTime() ||
-                  workoutDate.getTime() === new Date(currentCheckDate.getTime() - 86400000).getTime()) {
+                workoutDate.getTime() === new Date(currentCheckDate.getTime() - 86400000).getTime()) {
                 streak++;
                 currentCheckDate = new Date(workoutDate);
                 currentCheckDate.setDate(currentCheckDate.getDate() - 1);
@@ -129,7 +129,7 @@ export function MemberDashboard() {
           .filter(booking => {
             const bookingDate = new Date(booking.date);
             return (bookingDate >= now && booking.status !== 'completed') ||
-                   (booking.status === 'cancelled' && bookingDate >= now);
+              (booking.status === 'cancelled' && bookingDate >= now);
           })
           .sort((a, b) => new Date(a.date) - new Date(b.date));
 
@@ -231,15 +231,15 @@ export function MemberDashboard() {
   const getStatusBadge = (status) => {
     const statusStyles = {
       processing: 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30',
-      confirmed:  'bg-green-500/20 text-green-400 border border-green-500/30',
-      cancelled:  'bg-red-500/20 text-red-400 border border-red-500/30',
-      completed:  'bg-blue-500/20 text-blue-400 border border-blue-500/30'
+      confirmed: 'bg-green-500/20 text-green-400 border border-green-500/30',
+      cancelled: 'bg-red-500/20 text-red-400 border border-red-500/30',
+      completed: 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
     };
     const statusLabels = {
       processing: 'Pending',
-      confirmed:  'Confirmed',
-      cancelled:  'Cancelled',
-      completed:  'Completed'
+      confirmed: 'Confirmed',
+      cancelled: 'Cancelled',
+      completed: 'Completed'
     };
     return (
       <span className={`px-3 py-1 rounded-full text-xs font-semibold ${statusStyles[status] || statusStyles.processing}`}>
@@ -288,7 +288,7 @@ export function MemberDashboard() {
   const getMembershipDaysLeft = () => {
     if (!membership?.endDate) return null;
     const today = new Date();
-    const end   = new Date(membership.endDate);
+    const end = new Date(membership.endDate);
     return Math.ceil((end - today) / (1000 * 60 * 60 * 24));
   };
 
@@ -430,11 +430,10 @@ export function MemberDashboard() {
                                   <button
                                     onClick={() => handleCompleteBooking(booking._id)}
                                     disabled={!hasBookingTimePassed(booking.date, booking.timeSlot)}
-                                    className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
-                                      hasBookingTimePassed(booking.date, booking.timeSlot)
+                                    className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${hasBookingTimePassed(booking.date, booking.timeSlot)
                                         ? 'bg-green-500 hover:bg-green-600 text-black cursor-pointer'
                                         : 'bg-neutral-600 text-neutral-400 cursor-not-allowed'
-                                    }`}
+                                      }`}
                                     title={
                                       !hasBookingTimePassed(booking.date, booking.timeSlot)
                                         ? 'Available after workout time ends'
@@ -485,11 +484,10 @@ export function MemberDashboard() {
                         <button
                           onClick={goToPreviousPage}
                           disabled={currentPage === 1}
-                          className={`flex items-center space-x-1 px-3 py-2 rounded-lg font-medium transition-all ${
-                            currentPage === 1
+                          className={`flex items-center space-x-1 px-3 py-2 rounded-lg font-medium transition-all ${currentPage === 1
                               ? 'bg-neutral-800 text-neutral-600 cursor-not-allowed'
                               : 'bg-neutral-700 text-white hover:bg-neutral-600'
-                          }`}
+                            }`}
                         >
                           <ChevronLeft className="w-4 h-4" />
                           <span>Previous</span>
@@ -507,11 +505,10 @@ export function MemberDashboard() {
                                 <button
                                   key={pageNumber}
                                   onClick={() => goToPage(pageNumber)}
-                                  className={`px-3 py-2 rounded-lg font-medium transition-all ${
-                                    currentPage === pageNumber
+                                  className={`px-3 py-2 rounded-lg font-medium transition-all ${currentPage === pageNumber
                                       ? 'bg-green-500 text-black'
                                       : 'bg-neutral-700 text-white hover:bg-neutral-600'
-                                  }`}
+                                    }`}
                                 >
                                   {pageNumber}
                                 </button>
@@ -533,11 +530,10 @@ export function MemberDashboard() {
                         <button
                           onClick={goToNextPage}
                           disabled={currentPage === totalPages}
-                          className={`flex items-center space-x-1 px-3 py-2 rounded-lg font-medium transition-all ${
-                            currentPage === totalPages
+                          className={`flex items-center space-x-1 px-3 py-2 rounded-lg font-medium transition-all ${currentPage === totalPages
                               ? 'bg-neutral-800 text-neutral-600 cursor-not-allowed'
                               : 'bg-neutral-700 text-white hover:bg-neutral-600'
-                          }`}
+                            }`}
                         >
                           <span>Next</span>
                           <ChevronRight className="w-4 h-4" />
@@ -554,11 +550,10 @@ export function MemberDashboard() {
           <div className="space-y-6">
 
             {/* ✅ Dynamic Membership Card */}
-            <div className={`rounded-xl p-6 text-white shadow-lg ${
-              membership
+            <div className={`rounded-xl p-6 text-white shadow-lg ${membership
                 ? 'bg-gradient-to-br from-green-500 to-emerald-600 shadow-green-500/20'
                 : 'bg-gradient-to-br from-neutral-700 to-neutral-800 shadow-neutral-900/20'
-            }`}>
+              }`}>
               <div className="flex items-start justify-between mb-8">
                 <div>
                   <p className="text-green-100 text-sm mb-1">Membership</p>
@@ -590,11 +585,10 @@ export function MemberDashboard() {
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-green-100">Status</span>
-                      <span className={`font-semibold capitalize px-2 py-0.5 rounded-full text-xs ${
-                        membership.status === 'active'
+                      <span className={`font-semibold capitalize px-2 py-0.5 rounded-full text-xs ${membership.status === 'active'
                           ? 'bg-white/20 text-white'
                           : 'bg-red-500/20 text-red-200'
-                      }`}>
+                        }`}>
                         {membership.status}
                       </span>
                     </div>
@@ -610,13 +604,12 @@ export function MemberDashboard() {
                       const daysLeft = getMembershipDaysLeft();
                       if (daysLeft === null) return null;
                       return daysLeft > 0 ? (
-                        <div className={`text-xs text-center py-1.5 rounded-lg font-medium ${
-                          daysLeft <= 7
+                        <div className={`text-xs text-center py-1.5 rounded-lg font-medium ${daysLeft <= 7
                             ? 'bg-red-500/30 text-red-100'
                             : daysLeft <= 30
                               ? 'bg-yellow-500/30 text-yellow-100'
                               : 'bg-white/10 text-green-100'
-                        }`}>
+                          }`}>
                           {daysLeft <= 7
                             ? `⚠️ Expires in ${daysLeft} day${daysLeft !== 1 ? 's' : ''}!`
                             : daysLeft <= 30

@@ -6,8 +6,8 @@ const API_URL = 'https://fittrackhost.onrender.com/api';
 
 export default function PaymentSuccess() {
   const [searchParams] = useSearchParams();
-  const navigate        = useNavigate();
-  const [status, setStatus]   = useState('checking');
+  const navigate = useNavigate();
+  const [status, setStatus] = useState('checking');
   const [payment, setPayment] = useState(null);
 
   const orderId = searchParams.get('order_id');

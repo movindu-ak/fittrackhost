@@ -47,7 +47,7 @@ export const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     // Validate form
     const newErrors = validateForm();
     if (Object.keys(newErrors).length > 0) {
@@ -198,8 +198,8 @@ export const Login = () => {
             <div className="mt-6 pt-6 border-t border-neutral-800 text-center">
               <p className="text-neutral-400 text-sm">
                 Don't have an account?{' '}
-                <Link 
-                  to="/signup" 
+                <Link
+                  to="/signup"
                   className="text-green-400 font-semibold hover:text-green-300 transition"
                 >
                   Sign up
@@ -207,8 +207,8 @@ export const Login = () => {
               </p>
               <p className="text-neutral-500 text-xs mt-3">
                 Admin?{' '}
-                <Link 
-                  to="/admin" 
+                <Link
+                  to="/admin"
                   className="text-neutral-400 hover:text-white transition"
                 >
                   Login here

@@ -387,74 +387,32 @@ export const getTodayBookingsCount = async (req, res) => {
 // @access  Private/Admin
 export const getTodayBookingsDetails = async (req, res) => {
   try {
+    const page  = parseInt(req.query.page)  || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip  = (page - 1) * limit;
+
     const now = new Date();
     const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
     const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
 
-    // Get all bookings created today
-    const bookings = await Booking.find({
-      createdAt: { $gte: startOfDay, $lte: endOfDay }
-    })
-    .populate('trainer', 'name email')
-    .populate('user', 'name email')
-    .sort({ createdAt: -1 });
+    const filter = { createdAt: { $gte: startOfDay, $lte: endOfDay } };
 
-    // Group by trainer and timeslot
-    const trainerBookings = {};
-    const generalBookings = [];
-
-    bookings.forEach(booking => {
-      if (booking.type === 'trainer' && booking.trainer) {
-        const trainerId = booking.trainer._id.toString();
-        if (!trainerBookings[trainerId]) {
-          trainerBookings[trainerId] = {
-            trainerId,
-            trainerName: booking.trainer.name,
-            trainerEmail: booking.trainer.email,
-            totalBookings: 0,
-            timeslots: {}
-          };
-        }
-
-        if (!trainerBookings[trainerId].timeslots[booking.timeSlot]) {
-          trainerBookings[trainerId].timeslots[booking.timeSlot] = {
-            timeSlot: booking.timeSlot,
-            count: 0,
-            members: []
-          };
-        }
-
-        trainerBookings[trainerId].timeslots[booking.timeSlot].count++;
-        trainerBookings[trainerId].timeslots[booking.timeSlot].members.push({
-          name: booking.user?.name,
-          email: booking.user?.email,
-          status: booking.status,
-          date: booking.date
-        });
-        trainerBookings[trainerId].totalBookings++;
-      } else {
-        // General workout bookings
-        generalBookings.push({
-          member: booking.user?.name,
-          timeSlot: booking.timeSlot,
-          date: booking.date,
-          status: booking.status
-        });
-      }
-    });
-
-    // Convert to array format
-    const trainersArray = Object.values(trainerBookings).map(trainer => ({
-      ...trainer,
-      timeslots: Object.values(trainer.timeslots)
-    }));
+    const [bookings, totalCount] = await Promise.all([
+      Booking.find(filter)
+        .populate('trainer', 'name email')
+        .populate('user', 'name email phone')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit),
+      Booking.countDocuments(filter)
+    ]);
 
     res.json({
-      totalBookings: bookings.length,
-      date: startOfDay.toISOString().split('T')[0],
-      trainers: trainersArray,
-      generalBookings,
-      generalBookingsCount: generalBookings.length
+      bookings,
+      count: totalCount,
+      pages: Math.ceil(totalCount / limit),
+      currentPage: page,
+      date: startOfDay.toISOString().split('T')[0]
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
