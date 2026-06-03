@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Clock, User, Check } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Clock, User, Check, CreditCard, Lock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Navigation } from '../components/Navigation';
+import API_URL from '../config.js';
 
 export function BookingPage() {
   const navigate = useNavigate();
@@ -12,6 +13,36 @@ export function BookingPage() {
   const [trainers, setTrainers] = useState([]);
   const [loadingTrainers, setLoadingTrainers] = useState(false);
   const [trainerAvailability, setTrainerAvailability] = useState({});
+  const [membership, setMembership] = useState(null);
+  const [membershipLoading, setMembershipLoading] = useState(true);
+
+  // Check for active membership on mount
+  useEffect(() => {
+    const checkMembership = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${API_URL}/memberships/status`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          // active membership that is paid and not expired
+          if (
+            data.active &&
+            data.active.paymentStatus === 'paid' &&
+            new Date(data.active.endDate) >= new Date()
+          ) {
+            setMembership(data.active);
+          }
+        }
+      } catch (err) {
+        console.error('Membership check failed:', err);
+      } finally {
+        setMembershipLoading(false);
+      }
+    };
+    checkMembership();
+  }, []);
 
   useEffect(() => {
     if (bookingType === 'trainer') {
@@ -205,6 +236,79 @@ export function BookingPage() {
   const days = getDaysInMonth(selectedDate);
   const monthName = selectedDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
+  // ── Membership gate ───────────────────────────────────────
+  if (membershipLoading) {
+    return (
+      <div className="min-h-screen">
+        <Navigation currentPage="booking" role="member" />
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <p className="text-neutral-400 animate-pulse">Checking membership...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!membership) {
+    return (
+      <div className="min-h-screen">
+        <Navigation currentPage="booking" role="member" />
+        <div className="flex items-center justify-center min-h-[70vh] px-4">
+          <div className="max-w-md w-full text-center">
+            {/* Lock icon */}
+            <div className="relative inline-flex items-center justify-center w-24 h-24 mb-6">
+              <div className="absolute inset-0 bg-red-500/10 rounded-full animate-ping opacity-30" />
+              <div className="w-24 h-24 bg-neutral-800 border border-neutral-700 rounded-full flex items-center justify-center">
+                <Lock className="w-10 h-10 text-red-400" />
+              </div>
+            </div>
+
+            <h2 className="text-2xl font-bold text-white mb-3">Membership Required</h2>
+            <p className="text-neutral-400 mb-2">
+              You need an <span className="text-green-400 font-semibold">active, paid membership</span> to book workout slots or personal trainer sessions.
+            </p>
+            <p className="text-neutral-500 text-sm mb-8">
+              Purchase a plan to unlock full access to all bookings.
+            </p>
+
+            {/* Feature list */}
+            <div className="bg-neutral-800/50 border border-neutral-700 rounded-xl p-5 mb-6 text-left space-y-3">
+              {[
+                'Book up to 2 workout slots per day',
+                'Hire personal trainers',
+                'Track your workout streak',
+                'Access all gym time slots',
+              ].map((feat) => (
+                <div key={feat} className="flex items-center gap-3 text-sm text-neutral-300">
+                  <Check className="w-4 h-4 text-green-400 flex-shrink-0" />
+                  {feat}
+                </div>
+              ))}
+            </div>
+
+            <button
+              onClick={() => navigate('/select-membership')}
+              className="w-full bg-gradient-to-r from-green-500 to-emerald-500 text-black
+                         font-semibold py-3 rounded-xl hover:from-green-600 hover:to-emerald-600
+                         hover:shadow-lg hover:shadow-green-500/30 transition-all flex items-center
+                         justify-center gap-2"
+            >
+              <CreditCard className="w-5 h-5" />
+              View Membership Plans
+            </button>
+
+            <button
+              onClick={() => navigate('/member-dashboard')}
+              className="mt-3 w-full text-neutral-400 hover:text-white text-sm transition"
+            >
+              ← Back to Dashboard
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  // ─────────────────────────────────────────────────────────
+
   return (
     <div className="min-h-screen">
       <Navigation currentPage="booking" role="member" />
@@ -278,11 +382,11 @@ export function BookingPage() {
                       onClick={() => !isPast && setSelectedDate(day)}
                       disabled={isPast}
                       className={`p-2 rounded ${isPast
-                          ? 'text-neutral-600 cursor-not-allowed opacity-50'
-                          : day.getDate() === selectedDate.getDate() &&
-                            day.getMonth() === selectedDate.getMonth()
-                            ? 'bg-green-500 text-black font-semibold'
-                            : 'text-white hover:bg-neutral-700'
+                        ? 'text-neutral-600 cursor-not-allowed opacity-50'
+                        : day.getDate() === selectedDate.getDate() &&
+                          day.getMonth() === selectedDate.getMonth()
+                          ? 'bg-green-500 text-black font-semibold'
+                          : 'text-white hover:bg-neutral-700'
                         }`}
                     >
                       {day.getDate()}
@@ -327,10 +431,10 @@ export function BookingPage() {
                       }}
                       disabled={isDisabled}
                       className={`p-4 rounded-lg border text-left transition-all ${isSelected
-                          ? 'bg-green-500/20 border-green-500'
-                          : isDisabled
-                            ? 'bg-neutral-900/50 border-neutral-700 opacity-50 cursor-not-allowed'
-                            : 'bg-neutral-900 border-neutral-700 hover:border-neutral-600'
+                        ? 'bg-green-500/20 border-green-500'
+                        : isDisabled
+                          ? 'bg-neutral-900/50 border-neutral-700 opacity-50 cursor-not-allowed'
+                          : 'bg-neutral-900 border-neutral-700 hover:border-neutral-600'
                         }`}
                     >
                       <div className="flex items-center justify-between mb-2">
@@ -344,9 +448,9 @@ export function BookingPage() {
                       </div>
                       <div className="flex items-center justify-between text-sm">
                         <span className={`${isPassed ? 'text-neutral-500' :
-                            slot.crowd === 'low' ? 'text-green-400' :
-                              slot.crowd === 'medium' ? 'text-yellow-400' :
-                                'text-red-400'
+                          slot.crowd === 'low' ? 'text-green-400' :
+                            slot.crowd === 'medium' ? 'text-yellow-400' :
+                              'text-red-400'
                           }`}>
                           {isPassed ? '🔒 Passed' :
                             slot.crowd === 'low' ? '🟢 Low' :
@@ -384,8 +488,8 @@ export function BookingPage() {
                         key={trainer._id}
                         onClick={() => setSelectedTrainer(trainer._id)}
                         className={`w-full text-left p-4 rounded-lg border transition-all ${selectedTrainer === trainer._id
-                            ? 'bg-green-500/20 border-green-500'
-                            : 'bg-neutral-800 border-neutral-700 hover:border-neutral-600'
+                          ? 'bg-green-500/20 border-green-500'
+                          : 'bg-neutral-800 border-neutral-700 hover:border-neutral-600'
                           }`}
                       >
                         <div className="flex items-center justify-between gap-3">
@@ -431,8 +535,8 @@ export function BookingPage() {
                             </div>
                             {selectedTrainer && trainerAvailability[slot] && (
                               <div className={`mt-1 text-xs ${trainerAvailability[slot].available
-                                  ? 'text-green-400'
-                                  : 'text-red-400'
+                                ? 'text-green-400'
+                                : 'text-red-400'
                                 }`}>
                                 {trainerAvailability[slot].available
                                   ? `✓ ${trainerAvailability[slot].spotsRemaining} of 5 spots available`

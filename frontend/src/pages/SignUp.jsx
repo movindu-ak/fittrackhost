@@ -120,33 +120,20 @@ export const SignUp = () => {
       }
 
       // Show success message
-      setSuccessMessage('Registration successful!');
+      setSuccessMessage('Registration successful! Redirecting to your dashboard...');
 
-      // Clear form
-      setFormData({
-        name: '',
-        email: '',
-        password: '',
-        confirmPassword: '',
-        phone: '',
-        ageRange: '',
-        gender: ''
-      });
+      // Auto-login: save token and user to localStorage
+      localStorage.setItem('token', data.data.token);
+      localStorage.setItem('user', JSON.stringify({
+        id: data.data._id,
+        name: data.data.name,
+        email: data.data.email,
+        role: data.data.role
+      }));
 
-      // Redirect to membership plan selection
+      // Redirect to landing page
       setTimeout(() => {
-        navigate('/select-membership', {
-          state: {
-            userData: {
-              name: formData.name,
-              email: formData.email,
-              phone: formData.phone,
-              ageRange: formData.ageRange,
-              gender: formData.gender,
-              userId: data.data._id
-            }
-          }
-        });
+        navigate('/');
       }, 1500);
     } catch (error) {
       setApiError(error.message);
@@ -281,8 +268,8 @@ export const SignUp = () => {
                       }
                     }}
                     className={`flex-1 py-3 rounded-lg border-2 font-semibold transition-all ${formData.gender === 'male'
-                        ? 'border-green-500 bg-green-500/10 text-green-400'
-                        : 'border-neutral-700 bg-neutral-800 text-neutral-300 hover:border-neutral-600'
+                      ? 'border-green-500 bg-green-500/10 text-green-400'
+                      : 'border-neutral-700 bg-neutral-800 text-neutral-300 hover:border-neutral-600'
                       }`}
                   >
                     ✓ Male
@@ -296,8 +283,8 @@ export const SignUp = () => {
                       }
                     }}
                     className={`flex-1 py-3 rounded-lg border-2 font-semibold transition-all ${formData.gender === 'female'
-                        ? 'border-green-500 bg-green-500/10 text-green-400'
-                        : 'border-neutral-700 bg-neutral-800 text-neutral-300 hover:border-neutral-600'
+                      ? 'border-green-500 bg-green-500/10 text-green-400'
+                      : 'border-neutral-700 bg-neutral-800 text-neutral-300 hover:border-neutral-600'
                       }`}
                   >
                     ✓ Female

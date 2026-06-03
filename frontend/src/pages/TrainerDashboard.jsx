@@ -258,10 +258,10 @@ export const TrainerDashboard = () => {
                             <span className="text-white font-medium text-sm">{slot.timeSlot}</span>
                           </div>
                           <span className={`px-2 py-1 rounded-full text-xs font-semibold ${slot.count >= 5
-                              ? 'bg-red-500/20 text-red-400'
-                              : slot.count >= 3
-                                ? 'bg-yellow-500/20 text-yellow-400'
-                                : 'bg-green-500/20 text-green-400'
+                            ? 'bg-red-500/20 text-red-400'
+                            : slot.count >= 3
+                              ? 'bg-yellow-500/20 text-yellow-400'
+                              : 'bg-green-500/20 text-green-400'
                             }`}>
                             {slot.count}/{slot.capacity}
                           </span>
@@ -271,10 +271,10 @@ export const TrainerDashboard = () => {
                           <div className="w-full bg-neutral-700 rounded-full h-2">
                             <div
                               className={`h-2 rounded-full transition-all ${slot.count >= 5
-                                  ? 'bg-red-500'
-                                  : slot.count >= 3
-                                    ? 'bg-yellow-500'
-                                    : 'bg-green-500'
+                                ? 'bg-red-500'
+                                : slot.count >= 3
+                                  ? 'bg-yellow-500'
+                                  : 'bg-green-500'
                                 }`}
                               style={{ width: `${(slot.count / slot.capacity) * 100}%` }}
                             />
@@ -288,8 +288,8 @@ export const TrainerDashboard = () => {
                               <span className="w-4 text-gray-500">{idx + 1}.</span>
                               <span className="truncate">{member.name}</span>
                               <span className={`ml-auto px-2 py-0.5 rounded text-xs ${member.status === 'confirmed'
-                                  ? 'bg-blue-500/20 text-blue-400'
-                                  : 'bg-yellow-500/20 text-yellow-400'
+                                ? 'bg-blue-500/20 text-blue-400'
+                                : 'bg-yellow-500/20 text-yellow-400'
                                 }`}>
                                 {member.status === 'confirmed' ? '✓' : '⏳'}
                               </span>

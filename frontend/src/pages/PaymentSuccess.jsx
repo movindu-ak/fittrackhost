@@ -1,8 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
-
-const API_URL = 'https://fittrackhost.onrender.com/api';
+import API_URL from '../config.js';
 
 export default function PaymentSuccess() {
   const [searchParams] = useSearchParams();
@@ -14,7 +12,7 @@ export default function PaymentSuccess() {
 
   useEffect(() => {
     if (!orderId) {
-      navigate('/member/dashboard');
+      navigate('/member-dashboard');
       return;
     }
     checkStatus();
@@ -22,10 +20,13 @@ export default function PaymentSuccess() {
 
   const checkStatus = async () => {
     try {
-      const { data } = await axios.get(
+      const token = localStorage.getItem('token');
+      const res = await fetch(
         `${API_URL}/payments/verify/${orderId}`,
-        { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
+      if (!res.ok) throw new Error('Verification failed');
+      const data = await res.json();
       setPayment(data);
       setStatus(data.success ? 'success' : 'pending');
     } catch {
@@ -52,7 +53,7 @@ export default function PaymentSuccess() {
             <p className="text-gray-400 mb-2">Your membership is now active.</p>
             <p className="text-gray-500 text-sm mb-6">Order ID: {orderId}</p>
             <button
-              onClick={() => navigate('/member/dashboard')}
+              onClick={() => navigate('/member-dashboard')}
               className="w-full bg-blue-600 hover:bg-blue-700 text-white
                          font-semibold py-3 rounded-xl transition"
             >
@@ -69,7 +70,7 @@ export default function PaymentSuccess() {
               Your payment is being processed. We'll update your membership shortly.
             </p>
             <button
-              onClick={() => navigate('/member/dashboard')}
+              onClick={() => navigate('/member-dashboard')}
               className="w-full bg-gray-700 hover:bg-gray-600 text-white
                          font-semibold py-3 rounded-xl transition"
             >
@@ -86,7 +87,7 @@ export default function PaymentSuccess() {
               Payment may still be processing. Check your payment history.
             </p>
             <button
-              onClick={() => navigate('/member/dashboard')}
+              onClick={() => navigate('/member-dashboard')}
               className="w-full bg-gray-700 hover:bg-gray-600 text-white
                          font-semibold py-3 rounded-xl transition"
             >

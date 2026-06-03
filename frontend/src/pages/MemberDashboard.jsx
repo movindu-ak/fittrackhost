@@ -431,8 +431,8 @@ export function MemberDashboard() {
                                     onClick={() => handleCompleteBooking(booking._id)}
                                     disabled={!hasBookingTimePassed(booking.date, booking.timeSlot)}
                                     className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${hasBookingTimePassed(booking.date, booking.timeSlot)
-                                        ? 'bg-green-500 hover:bg-green-600 text-black cursor-pointer'
-                                        : 'bg-neutral-600 text-neutral-400 cursor-not-allowed'
+                                      ? 'bg-green-500 hover:bg-green-600 text-black cursor-pointer'
+                                      : 'bg-neutral-600 text-neutral-400 cursor-not-allowed'
                                       }`}
                                     title={
                                       !hasBookingTimePassed(booking.date, booking.timeSlot)
@@ -485,8 +485,8 @@ export function MemberDashboard() {
                           onClick={goToPreviousPage}
                           disabled={currentPage === 1}
                           className={`flex items-center space-x-1 px-3 py-2 rounded-lg font-medium transition-all ${currentPage === 1
-                              ? 'bg-neutral-800 text-neutral-600 cursor-not-allowed'
-                              : 'bg-neutral-700 text-white hover:bg-neutral-600'
+                            ? 'bg-neutral-800 text-neutral-600 cursor-not-allowed'
+                            : 'bg-neutral-700 text-white hover:bg-neutral-600'
                             }`}
                         >
                           <ChevronLeft className="w-4 h-4" />
@@ -506,8 +506,8 @@ export function MemberDashboard() {
                                   key={pageNumber}
                                   onClick={() => goToPage(pageNumber)}
                                   className={`px-3 py-2 rounded-lg font-medium transition-all ${currentPage === pageNumber
-                                      ? 'bg-green-500 text-black'
-                                      : 'bg-neutral-700 text-white hover:bg-neutral-600'
+                                    ? 'bg-green-500 text-black'
+                                    : 'bg-neutral-700 text-white hover:bg-neutral-600'
                                     }`}
                                 >
                                   {pageNumber}
@@ -531,8 +531,8 @@ export function MemberDashboard() {
                           onClick={goToNextPage}
                           disabled={currentPage === totalPages}
                           className={`flex items-center space-x-1 px-3 py-2 rounded-lg font-medium transition-all ${currentPage === totalPages
-                              ? 'bg-neutral-800 text-neutral-600 cursor-not-allowed'
-                              : 'bg-neutral-700 text-white hover:bg-neutral-600'
+                            ? 'bg-neutral-800 text-neutral-600 cursor-not-allowed'
+                            : 'bg-neutral-700 text-white hover:bg-neutral-600'
                             }`}
                         >
                           <span>Next</span>
@@ -551,8 +551,8 @@ export function MemberDashboard() {
 
             {/* ✅ Dynamic Membership Card */}
             <div className={`rounded-xl p-6 text-white shadow-lg ${membership
-                ? 'bg-gradient-to-br from-green-500 to-emerald-600 shadow-green-500/20'
-                : 'bg-gradient-to-br from-neutral-700 to-neutral-800 shadow-neutral-900/20'
+              ? 'bg-gradient-to-br from-green-500 to-emerald-600 shadow-green-500/20'
+              : 'bg-gradient-to-br from-neutral-700 to-neutral-800 shadow-neutral-900/20'
               }`}>
               <div className="flex items-start justify-between mb-8">
                 <div>
@@ -586,8 +586,8 @@ export function MemberDashboard() {
                     <div className="flex justify-between text-sm">
                       <span className="text-green-100">Status</span>
                       <span className={`font-semibold capitalize px-2 py-0.5 rounded-full text-xs ${membership.status === 'active'
-                          ? 'bg-white/20 text-white'
-                          : 'bg-red-500/20 text-red-200'
+                        ? 'bg-white/20 text-white'
+                        : 'bg-red-500/20 text-red-200'
                         }`}>
                         {membership.status}
                       </span>
@@ -605,10 +605,10 @@ export function MemberDashboard() {
                       if (daysLeft === null) return null;
                       return daysLeft > 0 ? (
                         <div className={`text-xs text-center py-1.5 rounded-lg font-medium ${daysLeft <= 7
-                            ? 'bg-red-500/30 text-red-100'
-                            : daysLeft <= 30
-                              ? 'bg-yellow-500/30 text-yellow-100'
-                              : 'bg-white/10 text-green-100'
+                          ? 'bg-red-500/30 text-red-100'
+                          : daysLeft <= 30
+                            ? 'bg-yellow-500/30 text-yellow-100'
+                            : 'bg-white/10 text-green-100'
                           }`}>
                           {daysLeft <= 7
                             ? `⚠️ Expires in ${daysLeft} day${daysLeft !== 1 ? 's' : ''}!`

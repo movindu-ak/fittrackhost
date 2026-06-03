@@ -1,4 +1,5 @@
 import Booking from '../models/Booking.js';
+import Membership from '../models/Membership.js';
 
 // @desc    Create new booking
 // @route   POST /api/bookings
@@ -6,6 +7,21 @@ import Booking from '../models/Booking.js';
 export const createBooking = async (req, res) => {
   try {
     const { type, date, timeSlot, trainer } = req.body;
+
+    // ── Membership guard ──────────────────────────────────────
+    const activeMembership = await Membership.findOne({
+      user: req.user._id,
+      status: 'active',
+      paymentStatus: 'paid',
+      endDate: { $gte: new Date() }
+    });
+
+    if (!activeMembership) {
+      return res.status(403).json({
+        message: 'An active membership is required to book sessions. Please purchase a membership plan first.'
+      });
+    }
+    // ─────────────────────────────────────────────────────────
 
     // Check if user has already booked 2 timeslots for the same day
     const bookingDate = new Date(date);
