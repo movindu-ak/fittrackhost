@@ -1,5 +1,5 @@
-import express from 'express';
-import { register, login, getProfile, getTrainers, registerTrainer, updateProfile, getAdminStats, getMembers } from '../controllers/auth.controller.js';
+﻿import express from 'express';
+import { register, login, getProfile, getTrainers, registerTrainer, updateProfile, getAdminStats, getMembers, getUserQR } from '../controllers/auth.controller.js';
 import { protect, admin } from '../middleware/auth.middleware.js';
 
 const router = express.Router();
@@ -12,6 +12,6 @@ router.get('/trainers', protect, getTrainers);
 router.get('/stats', protect, admin, getAdminStats);
 router.get('/members', protect, admin, getMembers);
 router.post('/register-trainer', protect, admin, registerTrainer);
+router.get('/qr', protect, getUserQR);
 
 export default router;
-
