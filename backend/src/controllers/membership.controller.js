@@ -47,26 +47,25 @@ export const createMembership = async (req, res) => {
     const { plan, price, activationMode } = req.body;
     const userId = req.user._id;
 
-    // Validate plan
     if (!PLAN_DURATION_MONTHS[plan]) {
       return res.status(400).json({
         message: `Invalid plan. Must be one of: ${Object.keys(PLAN_DURATION_MONTHS).join(', ')}`
       });
     }
 
-    // Lazy-promote any pending queued memberships first
     await promoteQueuedMemberships(userId);
 
     const now = new Date();
 
-    // Find current active membership (not yet expired)
+    // Clean up any leftover pending memberships (abandoned payments)
+    await Membership.deleteMany({ user: userId, status: 'pending' });
+
     const activeMembership = await Membership.findOne({
       user: userId,
       status: 'active',
       endDate: { $gte: now }
     }).sort({ startDate: -1 });
 
-    // Block if a queued membership already exists (prevent stacking)
     const queuedMembership = await Membership.findOne({
       user: userId,
       status: 'queued'
@@ -74,69 +73,48 @@ export const createMembership = async (req, res) => {
 
     if (queuedMembership) {
       return res.status(400).json({
-        message: 'You already have a membership queued to activate after your current plan. Please wait for it to start before purchasing another.',
+        message: 'You already have a membership queued. Please wait for it to start.',
         queuedPlan: queuedMembership.plan,
         queuedStartDate: queuedMembership.startDate
       });
     }
 
-    // ── Determine startDate and status ──────────────────────
     let startDate;
-    let membershipStatus;
     let previousMembershipId = null;
+    const chosenMode = activationMode === 'after_expiry' ? 'after_expiry' : 'immediate';
 
     if (!activeMembership) {
-      // No existing plan → always activate immediately (no choice needed)
       startDate = now;
-      membershipStatus = 'active';
+    } else if (chosenMode === 'immediate') {
+      startDate = now;
+      previousMembershipId = activeMembership._id;
     } else {
-      // User has an active plan — respect their activation choice
-      const chosenMode = activationMode === 'after_expiry' ? 'after_expiry' : 'immediate';
-
-      if (chosenMode === 'immediate') {
-        // Expire the current active membership and activate new one now
-        activeMembership.status = 'expired';
-        await activeMembership.save();
-
-        startDate = now;
-        membershipStatus = 'active';
-        previousMembershipId = activeMembership._id;
-      } else {
-        // Queue the new membership to start the day after current expires
-        const queueStart = new Date(activeMembership.endDate);
-        queueStart.setDate(queueStart.getDate() + 1);
-        queueStart.setHours(0, 0, 0, 0);
-
-        startDate = queueStart;
-        membershipStatus = 'queued';
-        previousMembershipId = activeMembership._id;
-      }
+      const queueStart = new Date(activeMembership.endDate);
+      queueStart.setDate(queueStart.getDate() + 1);
+      queueStart.setHours(0, 0, 0, 0);
+      startDate = queueStart;
+      previousMembershipId = activeMembership._id;
     }
 
-    // Calculate end date from the resolved startDate
     const endDate = new Date(startDate);
     endDate.setMonth(endDate.getMonth() + (PLAN_DURATION_MONTHS[plan] || 1));
 
-    // Create the membership record
+    // Always create as PENDING — activated only after payment webhook
     const membership = await Membership.create({
       user: userId,
       plan,
       startDate,
       endDate,
       price,
-      status: membershipStatus,
+      status: 'pending',
+      activationMode: chosenMode,
       previousMembershipId
     });
 
-    // Point user's membershipId to the new one only if it's immediately active
-    if (membershipStatus === 'active') {
-      await User.findByIdAndUpdate(userId, { membershipId: membership._id });
-    }
-
     res.status(201).json({
       ...membership.toObject(),
-      isQueued: membershipStatus === 'queued',
-      activatesAfter: membershipStatus === 'queued' ? activeMembership?.endDate : null
+      isQueued: chosenMode === 'after_expiry',
+      activatesAfter: chosenMode === 'after_expiry' ? activeMembership?.endDate : null
     });
   } catch (error) {
     res.status(500).json({ message: error.message });

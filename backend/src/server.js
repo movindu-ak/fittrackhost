@@ -1,24 +1,26 @@
+// ✅ MUST BE FIRST — before ANY other import
+import { config } from 'dotenv';
+config();
+
+// NOW import everything else
 import express from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
 import connectDB from './config/db.js';
-
-// Import routes
 import authRoutes from './routes/auth.routes.js';
 import bookingRoutes from './routes/booking.routes.js';
 import membershipRoutes from './routes/membership.routes.js';
 import crowdRoutes from './routes/crowd.routes.js';
 import alertRoutes from './routes/alert.routes.js';
 import paymentRoutes from './routes/payment.routes.js';
+import attendanceRoutes from './routes/attendance.routes.js';
+import attendanceRoutes from './routes/attendance.routes.js';
 
 
-// Load env vars
-dotenv.config();
-
-// Connect to database
+// Connect DB after env is loaded
 connectDB();
 
 const app = express();
+// ... rest of code
 
 // ⚠️ IMPORTANT: Webhook needs raw body, so register it BEFORE express.json()
 app.use('/api/payments/notify', express.raw({ type: '*/*' }));
@@ -38,6 +40,7 @@ app.use('/api/bookings', bookingRoutes);
 app.use('/api/memberships', membershipRoutes);
 app.use('/api/crowd', crowdRoutes);
 app.use('/api/alerts', alertRoutes);
+app.use('/api/attendance', attendanceRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

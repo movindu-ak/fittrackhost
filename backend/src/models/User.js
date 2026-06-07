@@ -44,6 +44,12 @@ const userSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Membership'
   },
+   qrCode: {
+    type: String,
+    unique: true,
+    sparse: true,
+    default: null
+  },
   createdAt: {
     type: Date,
     default: Date.now

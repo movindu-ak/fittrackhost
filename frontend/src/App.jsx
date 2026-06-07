@@ -12,6 +12,7 @@ import { Profile } from './pages/Profile';
 import { AdminDashboard } from './pages/AdminDashboard';
 import { AdminLogin } from './pages/AdminLogin';
 import PaymentSuccess from './pages/PaymentSuccess';
+import AdminScanner from './pages/AdminScanner.jsx';
 
 // Protected Route Component
 const ProtectedRoute = ({ children, allowedRoles }) => {
@@ -93,7 +94,14 @@ export default function App() {
               </ProtectedRoute>
             } 
           />
-
+<Route 
+  path="/admin/scanner" 
+  element={
+    <ProtectedRoute allowedRoles={['admin']}>
+      <AdminScanner />
+    </ProtectedRoute>
+  } 
+/>
           {/* Catch all - redirect to home */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

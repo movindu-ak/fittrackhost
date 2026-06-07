@@ -162,15 +162,16 @@ export const MembershipPlanSelection = () => {
     !queuedMembership &&
     (!hasActivePlan || !!activationMode);
 
-  // ── Submit ────────────────────────────────────────────────
-  const handleProceedToPayment = async () => {
+ const handleProceedToPayment = async () => {
     if (!canProceed) return;
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
       const body = {
-        plan:  selectedPlan.id,
-        price: selectedPlan.price,
+        plan:          selectedPlan.id,
+        price:         selectedPlan.price,
+        status:        'pending',      // ← ADD THIS
+        paymentStatus: 'pending',      // ← ADD THIS
         ...(hasActivePlan && { activationMode }),
       };
 

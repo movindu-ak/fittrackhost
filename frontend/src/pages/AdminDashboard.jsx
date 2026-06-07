@@ -4,6 +4,8 @@ import { StatCard } from '../components/StatCard';
 import { CrowdLevel } from '../components/CrowdLevel';
 import { useState, useEffect } from 'react';
 import { Input } from '../components/ui/Input';
+import { useNavigate } from 'react-router-dom';
+import API_URL from '../config.js';
 import {
   LineChart,
   Line,
@@ -19,9 +21,10 @@ import {
   Cell,
 } from 'recharts';
 
-const API_URL = 'http://localhost:5000/api';
+// const API_URL = 'http://localhost:5000/api';
 
 export function AdminDashboard({ onNavigate }) {
+  const navigate = useNavigate();
   const [showTrainerModal, setShowTrainerModal] = useState(false);
   const [showBookingsModal, setShowBookingsModal] = useState(false);
   const [trainers, setTrainers] = useState([]);
@@ -482,16 +485,25 @@ export function AdminDashboard({ onNavigate }) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8 flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-white mb-2">Admin Dashboard</h1>
+            <h1 className="text-3xl font-bold text-white mb-2">Admin Dashboard </h1>
             <p className="text-neutral-400">Monitor gym operations and analytics</p>
           </div>
-          <button
-            onClick={() => setShowTrainerModal(true)}
-            className="bg-gradient-to-r from-green-500 to-emerald-500 text-black px-6 py-3 rounded-lg font-semibold hover:shadow-lg hover:shadow-green-500/30 transition-all flex items-center gap-2"
-          >
-            <UserPlus className="w-5 h-5" />
-            Register Trainer
-          </button>
+          <div className="flex gap-3">
+  <button
+    onClick={() => navigate('/admin/scanner')}
+    className="bg-gradient-to-r from-blue-500 to-cyan-500 text-black px-6 py-3 rounded-lg font-semibold hover:shadow-lg hover:shadow-blue-500/30 transition-all flex items-center gap-2"
+  >
+    <span>📷</span>
+    QR Scanner
+  </button>
+  <button
+    onClick={() => setShowTrainerModal(true)}
+    className="bg-gradient-to-r from-green-500 to-emerald-500 text-black px-6 py-3 rounded-lg font-semibold hover:shadow-lg hover:shadow-green-500/30 transition-all flex items-center gap-2"
+  >
+    <UserPlus className="w-5 h-5" />
+    Register Trainer
+  </button>
+</div>
         </div>
 
         {/* Key Metrics */}
@@ -1038,11 +1050,7 @@ export function AdminDashboard({ onNavigate }) {
                   <p className="text-gray-500">No bookings today</p>
                 </div>
               )}
-              ) : (
-                <div className="text-center py-12">
-                  <p className="text-gray-500">Failed to load bookings details</p>
-                </div>
-              )}
+            
             </div>
           </div>
         </div>

@@ -21,8 +21,8 @@ const membershipSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['active', 'expired', 'cancelled', 'queued'],
-    default: 'active'
+    enum: ['pending', 'active', 'expired', 'cancelled', 'queued'], // ✅ added 'pending'
+    default: 'pending'   // ✅ changed from 'active' to 'pending'
   },
   price: {
     type: Number,
@@ -37,9 +37,6 @@ const membershipSchema = new mongoose.Schema({
     type: Date,
     default: Date.now
   },
-
-  // ADD these fields to your existing Membership schema:
-
   paymentId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Payment',
@@ -57,12 +54,15 @@ const membershipSchema = new mongoose.Schema({
     type: Date,
     default: null
   },
-
-  // Links this membership to the one it follows (for queued renewals)
   previousMembershipId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Membership',
     default: null
+  },
+  activationMode: {
+    type: String,
+    enum: ['immediate', 'after_expiry'],
+    default: 'immediate'
   }
 });
 
