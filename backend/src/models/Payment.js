@@ -30,11 +30,11 @@ const paymentSchema = new mongoose.Schema({
   },
 
   // PayHere specific fields
- orderId: {
-  type: String,
-  required: true,
-  unique: true
-}
+  orderId: {
+    type: String,
+    required: true,
+    unique: true
+  },
   payherePaymentId: {
     type: String,
     default: null
