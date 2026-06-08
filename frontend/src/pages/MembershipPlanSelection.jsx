@@ -5,7 +5,7 @@ import {
   Zap, Clock, AlertTriangle, Loader2
 } from 'lucide-react';
 
-const API_URL = 'http://localhost:5000/api';
+import API_URL from '../config.js';
 
 const formatDate = (dateStr) => {
   if (!dateStr) return '—';

@@ -20,7 +20,7 @@ export default function PaymentPage() {
       setLoading(true);
 
       // Get token from localStorage
-      const token = localStorage.getItem('authToken');
+      const token = localStorage.getItem('token');
       if (!token) {
         alert('Please log in first');
         navigate('/login');
