@@ -13,7 +13,7 @@ import crowdRoutes from './routes/crowd.routes.js';
 import alertRoutes from './routes/alert.routes.js';
 import paymentRoutes from './routes/payment.routes.js';
 import attendanceRoutes from './routes/attendance.routes.js';
-import attendanceRoutes from './routes/attendance.routes.js';
+// import attendanceRoutes from './routes/attendance.routes.js';
 
 
 // Connect DB after env is loaded
