@@ -326,6 +326,7 @@ export function AdminDashboard({ onNavigate }) {
     }
   };
 
+  //live crowd update every 300 sec 
   const fetchAlerts = async () => {
     setLoadingAlerts(true);
     try {
@@ -336,8 +337,7 @@ export function AdminDashboard({ onNavigate }) {
       if (response.ok) {
         const data = await response.json();
         setAlerts(data.alerts || []);
-        setOccupancyPercentage(data.occupancyPercentage || 35);
-      }
+          setOccupancyPercentage(data.occupancyPercentage ?? 0);      }
     } catch (error) {
       console.error('Error fetching alerts:', error);
     } finally {
