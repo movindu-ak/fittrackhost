@@ -36,7 +36,7 @@ const promoteQueuedMemberships = async (userId) => {
 };
 
 // ─────────────────────────────────────────────────────────
-// @desc    Create new membership
+// @desc    Create new membership/purchase
 //          activationMode = 'immediate' | 'after_expiry'
 //          (only relevant when an active membership exists)
 // @route   POST /api/memberships

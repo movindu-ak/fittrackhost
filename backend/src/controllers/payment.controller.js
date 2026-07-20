@@ -71,6 +71,8 @@ export const createPaymentOrder = async (req, res) => {
       paymentRecordId: payment._id,
       returnUrl: `${process.env.FRONTEND_URL}/payment/success`,
       cancelUrl: `${process.env.FRONTEND_URL}/payment/cancel`,
+      //This is webhook URL
+      //PayHere will POST to this when payment done
       notifyUrl: `${process.env.BACKEND_URL}/api/payments/notify`
     });
 
@@ -80,6 +82,7 @@ export const createPaymentOrder = async (req, res) => {
   }
 };
 
+//handlePayHereNotify
 export const handlePayHereNotify = async (req, res) => {
   try {
     const {
@@ -126,7 +129,7 @@ export const handlePayHereNotify = async (req, res) => {
       return res.status(404).json({ message: 'Payment record not found' });
     }
 
-    // ✅ Activate membership ONLY on successful payment
+    //  Activate membership ONLY on successful payment
     if (newStatus === 'captured' && payment.membershipId) {
       const membership = await Membership.findById(payment.membershipId);
 

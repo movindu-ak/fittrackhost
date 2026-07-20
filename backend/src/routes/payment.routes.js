@@ -14,21 +14,19 @@ import { protect, admin } from '../middleware/auth.middleware.js';
 
 const router = express.Router();
 
-// ─────────────────────────────────────────────
-// PUBLIC ROUTE (no JWT — called by PayHere server)
-// ─────────────────────────────────────────────
+
+//This endpoint receives PayHere's webhook call
 router.post('/notify', handlePayHereNotify);
 
-// ─────────────────────────────────────────────
+
 // PROTECTED ROUTES (JWT required)
-// ─────────────────────────────────────────────
+
 router.post('/create-order',              protect,       createPaymentOrder);
 router.get('/verify/:orderId',            protect,       verifyPaymentStatus);
 router.get('/history',                    protect,       getPaymentHistory);
 
-// ─────────────────────────────────────────────
 // ADMIN ROUTES
-// ─────────────────────────────────────────────
+
 router.get('/admin/today',               protect, admin, getTodayRevenue);
 router.get('/admin/pending',             protect, admin, getPendingPayments);
 router.patch('/admin/:id/accept',        protect, admin, acceptPayment);
