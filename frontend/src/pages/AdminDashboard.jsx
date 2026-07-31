@@ -31,7 +31,7 @@ export function AdminDashboard({ onNavigate }) {
   const [loadingTrainers, setLoadingTrainers] = useState(false);
   const [alerts, setAlerts] = useState([]);
   const [loadingAlerts, setLoadingAlerts] = useState(false);
-  const [occupancyPercentage, setOccupancyPercentage] = useState(35);
+  const [occupancyPercentage, setOccupancyPercentage] = useState(12);
   const [todayBookingsCount, setTodayBookingsCount] = useState(0);
   const [todayBookingsDetails, setTodayBookingsDetails] = useState([]);
   const [loadingBookingsDetails, setLoadingBookingsDetails] = useState(false);

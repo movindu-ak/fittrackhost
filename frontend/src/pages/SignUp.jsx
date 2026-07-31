@@ -196,6 +196,8 @@ export const SignUp = () => {
           {/* Sign Up Form */}
           <div className="bg-neutral-900/80 backdrop-blur-lg border border-neutral-800 rounded-2xl p-6 sm:p-8 shadow-2xl">
             <form onSubmit={handleSubmit} className="space-y-5">
+                <input type="text" style={{ display: 'none' }} />
+                <input type="password" style={{ display: 'none' }} />
               {apiError && (
                 <div className="bg-red-500/10 border border-red-500/50 text-red-400 px-4 py-3 rounded-lg text-sm">
                   {apiError}
@@ -219,12 +221,15 @@ export const SignUp = () => {
                 required
               />
 
-              <Input
+             <Input
                 label="Email"
                 type="email"
-                name="email"
+                name="signup_email"
                 value={formData.email}
                 onChange={handleChange}
+                autoComplete="off"
+                readOnly
+                onFocus={e => e.target.removeAttribute('readonly')}
                 placeholder="Enter your email"
                 error={errors.email}
                 required
@@ -311,17 +316,22 @@ export const SignUp = () => {
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
+                autoComplete="new-password"
+                readOnly
+                onFocus={e => e.target.removeAttribute('readonly')}
                 placeholder="Create a password (min. 6 characters)"
                 error={errors.password}
                 required
               />
-
               <Input
                 label="Confirm Password"
                 type="password"
                 name="confirmPassword"
                 value={formData.confirmPassword}
                 onChange={handleChange}
+                autoComplete="new-password"
+                readOnly
+                onFocus={e => e.target.removeAttribute('readonly')}
                 placeholder="Confirm your password"
                 error={errors.confirmPassword}
                 required

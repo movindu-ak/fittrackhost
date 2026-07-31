@@ -12,6 +12,7 @@ export function MemberDashboard() {
   const [loadingBookings, setLoadingBookings] = useState(true);
   const [user, setUser] = useState(null);
   const [membership, setMembership] = useState(null);
+  const [occupancyPercentage, setOccupancyPercentage] = useState(0);
   const [monthlyWorkouts, setMonthlyWorkouts] = useState(0);
   const [streakDays, setStreakDays] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
@@ -28,7 +29,25 @@ export function MemberDashboard() {
         console.error('Error parsing user data:', error);
       }
     }
+
+    fetchCrowdStatus();
+    const interval = setInterval(fetchCrowdStatus, 30000);
+    return () => clearInterval(interval);
   }, []);
+
+
+  // fetch the current gym occupancy
+  const fetchCrowdStatus = async () => {
+    try {
+      const response = await fetch('https://fittrackhost.onrender.com/api/crowd/current');
+      if (response.ok) {
+        const data = await response.json();
+        setOccupancyPercentage(data.percentage);
+      }
+    } catch (error) {
+      console.error('Error fetching crowd status:', error);
+    }
+  };
 
   const fetchUserProfile = async () => {
     try {
@@ -356,7 +375,7 @@ export function MemberDashboard() {
                   <span className="text-green-400 text-sm">Live</span>
                 </div>
               </div>
-              <CrowdLevel level="low" percentage={35} />
+              <CrowdLevel level={occupancyPercentage < 40 ? 'low' : occupancyPercentage < 70 ? 'medium' : 'high'} percentage={occupancyPercentage} />
             </div>
 
             {/* Upcoming Bookings */}

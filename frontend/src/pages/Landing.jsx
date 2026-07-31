@@ -14,10 +14,13 @@ import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { CrowdLevel } from '../components/CrowdLevel';
 import { ImageWithFallback } from '../components/figma/ImageWithFallback';
+import API_URL from '../config.js';
 
 export function Landing() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
+  const [crowdLevel, setCrowdLevel] = useState('low');
+  const [crowdPercentage, setCrowdPercentage] = useState(0);
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
@@ -28,7 +31,24 @@ export function Landing() {
         console.error('Error parsing user data:', error);
       }
     }
+
+    fetchCrowdStatus();
+    const interval = setInterval(fetchCrowdStatus, 30000);
+    return () => clearInterval(interval);
   }, []);
+
+  const fetchCrowdStatus = async () => {
+    try {
+      const response = await fetch(`${API_URL}/crowd/current`);
+      if (response.ok) {
+        const data = await response.json();
+        setCrowdLevel(data.level);
+        setCrowdPercentage(data.percentage);
+      }
+    } catch (error) {
+      console.error('Error fetching crowd status:', error);
+    }
+  };
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -151,7 +171,7 @@ export function Landing() {
               <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
               Live Gym Status
             </p>
-            <CrowdLevel level="low" percentage={35} />
+            <CrowdLevel level={crowdLevel} percentage={crowdPercentage} />
           </div>
         </div>
       </section>

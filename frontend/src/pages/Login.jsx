@@ -34,6 +34,7 @@ export const Login = () => {
     setLoading(true);
     setApiError('');
 
+    //attempt to log in the user
     try {
       const response = await fetch(`${API_URL}/auth/login`, {
         method: 'POST',
@@ -43,7 +44,8 @@ export const Login = () => {
 
       const data = await response.json();
       if (!response.ok) throw new Error(data.message || 'Login failed');
-
+     
+      //save token and user info in localStorage
       localStorage.setItem('token', data.data.token);
       localStorage.setItem('user', JSON.stringify({
         id:    data.data._id,

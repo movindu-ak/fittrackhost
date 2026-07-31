@@ -13,6 +13,14 @@ import { AdminDashboard } from './pages/AdminDashboard';
 import { AdminLogin } from './pages/AdminLogin';
 import PaymentSuccess from './pages/PaymentSuccess';
 import AdminScanner from './pages/AdminScanner.jsx';
+import { useSessionTimeout } from './hooks/useSessionTimeout';
+
+
+
+const SessionManager = ({ children }) => {
+  useSessionTimeout();
+  return children;
+};
 
 // Protected Route Component
 const ProtectedRoute = ({ children, allowedRoles }) => {
@@ -33,79 +41,31 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
 export default function App() {
   return (
     <Router>
-      <div className="min-h-screen bg-gradient-to-br from-black via-neutral-900 to-neutral-800">
-        <Routes>
-          {/* Public Routes */}
-          <Route path="/" element={<Landing />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<SignUp />} />
-          <Route path="/admin" element={<AdminLogin />} />
-          <Route path="/select-membership" element={<MembershipPlanSelection />} />
-          <Route path="/payment" element={<PaymentPage />} />
-          <Route path="/payment/success" element={<PaymentSuccess />} />
-          <Route path="/payment/cancel"  element={<PaymentPage />} />
+      <SessionManager>  {/* ← ADD THIS */}
+        <div className="min-h-screen bg-gradient-to-br from-black via-neutral-900 to-neutral-800">
+          <Routes>
+            {/* Public Routes */}
+            <Route path="/" element={<Landing />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<SignUp />} />
+            <Route path="/admin" element={<AdminLogin />} />
+            <Route path="/select-membership" element={<MembershipPlanSelection />} />
+            <Route path="/payment" element={<PaymentPage />} />
+            <Route path="/payment/success" element={<PaymentSuccess />} />
+            <Route path="/payment/cancel"  element={<PaymentPage />} />
 
-          {/* Protected Routes */}
-         <Route 
-            path="/admin-dashboard" 
-            element={
-              <ProtectedRoute allowedRoles={['admin']}>
-                <AdminDashboard />
-              </ProtectedRoute>
-            }
-          />
-          <Route 
-            path="/trainer-dashboard" 
-            element={
-              <ProtectedRoute allowedRoles={['trainer']}>
-                <TrainerDashboard />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/member-dashboard" 
-            element={
-              <ProtectedRoute allowedRoles={['member']}>
-                <MemberDashboard />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/booking" 
-            element={
-              <ProtectedRoute allowedRoles={['member']}>
-                <BookingPage />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/membership" 
-            element={
-              <ProtectedRoute allowedRoles={['member']}>
-                <MembershipPayments />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/profile" 
-            element={
-              <ProtectedRoute allowedRoles={['member', 'trainer', 'admin']}>
-                <Profile />
-              </ProtectedRoute>
-            } 
-          />
-<Route 
-  path="/admin/scanner" 
-  element={
-    <ProtectedRoute allowedRoles={['admin']}>
-      <AdminScanner />
-    </ProtectedRoute>
-  } 
-/>
-          {/* Catch all - redirect to home */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </div>
+            {/* Protected Routes */}
+            <Route path="/admin-dashboard" element={<ProtectedRoute allowedRoles={['admin']}><AdminDashboard /></ProtectedRoute>} />
+            <Route path="/trainer-dashboard" element={<ProtectedRoute allowedRoles={['trainer']}><TrainerDashboard /></ProtectedRoute>} />
+            <Route path="/member-dashboard" element={<ProtectedRoute allowedRoles={['member']}><MemberDashboard /></ProtectedRoute>} />
+            <Route path="/booking" element={<ProtectedRoute allowedRoles={['member']}><BookingPage /></ProtectedRoute>} />
+            <Route path="/membership" element={<ProtectedRoute allowedRoles={['member']}><MembershipPayments /></ProtectedRoute>} />
+            <Route path="/profile" element={<ProtectedRoute allowedRoles={['member', 'trainer', 'admin']}><Profile /></ProtectedRoute>} />
+            <Route path="/admin/scanner" element={<ProtectedRoute allowedRoles={['admin']}><AdminScanner /></ProtectedRoute>} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </div>
+      </SessionManager>  {/* ← AND THIS */}
     </Router>
   );
 }

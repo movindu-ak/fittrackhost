@@ -110,6 +110,7 @@ export const handlePayHereNotify = async (req, res) => {
       return res.status(400).json({ message: 'Invalid signature' });
     }
 
+    // payhere status codes for internal use
     const statusMap = { '2': 'captured', '0': 'pending', '-1': 'cancelled', '-2': 'failed', '-3': 'refunded' };
     const newStatus = statusMap[String(status_code)] || 'pending';
 

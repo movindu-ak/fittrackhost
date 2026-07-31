@@ -10,9 +10,9 @@ export const getAdminAlerts = async (req, res) => {
     const alerts = [];
     const now = new Date();
 
-    // ─────────────────────────────────────────────
-    // 1. REAL LIVE OCCUPANCY from Attendance model
-    // ─────────────────────────────────────────────
+    
+    // REAL LIVE OCCUPANCY from Attendance model
+    
     const GYM_CAPACITY = 50; // change to your gym's max capacity
 
     const todayStart = new Date();
@@ -40,9 +40,9 @@ export const getAdminAlerts = async (req, res) => {
       });
     }
 
-    // ─────────────────────────────────────────────
-    // 2. New member registrations in last 24 hours
-    // ─────────────────────────────────────────────
+    
+    // New member registrations in last 24 hours
+    
     const last24Hours = new Date(now.getTime() - 24 * 60 * 60 * 1000);
     const newUsers = await User.find({
       createdAt: { $gte: last24Hours },
