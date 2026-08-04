@@ -331,7 +331,7 @@ export function MemberDashboard() {
             title="Workouts This Month"
             value={loadingBookings ? '...' : monthlyWorkouts.toString()}
             icon={Dumbbell}
-            trend={{ value: '15%', isPositive: true }}
+            // trend={{ value: '', isPositive: true }}
             accentColor="green"
           />
           {/* ✅ Dynamic membership plan name */}
