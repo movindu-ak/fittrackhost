@@ -6,7 +6,6 @@ import {
   getUserAttendance,
   getAttendanceStats
 } from '../controllers/attendance.controller.js';
-router.get('/weekly', authMiddleware, getWeeklyAttendance);
 
 const router = express.Router();
 
@@ -23,6 +22,10 @@ router.post('/scan', protect, adminOrTrainer, scanQR);
 
 // GET  /api/attendance/today — today's list
 router.get('/today', protect, adminOrTrainer, getTodayAttendance);
+
+// GET  /api/attendance/weekly — weekly attendance chart data
+router.get('/weekly', protect, adminOrTrainer, getWeeklyAttendance);
+
 
 // GET  /api/attendance/stats — quick stats
 router.get('/stats', protect, adminOrTrainer, getAttendanceStats);
