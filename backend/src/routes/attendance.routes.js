@@ -4,7 +4,8 @@ import {
   scanQR,
   getTodayAttendance,
   getUserAttendance,
-  getAttendanceStats
+  getAttendanceStats,
+  getWeeklyAttendance
 } from '../controllers/attendance.controller.js';
 
 const router = express.Router();
@@ -23,12 +24,11 @@ router.post('/scan', protect, adminOrTrainer, scanQR);
 // GET  /api/attendance/today — today's list
 router.get('/today', protect, adminOrTrainer, getTodayAttendance);
 
-// GET  /api/attendance/weekly — weekly attendance chart data
-router.get('/weekly', protect, adminOrTrainer, getWeeklyAttendance);
-
-
 // GET  /api/attendance/stats — quick stats
 router.get('/stats', protect, adminOrTrainer, getAttendanceStats);
+
+// GET  /api/attendance/weekly — weekly attendance chart data
+router.get('/weekly', protect, adminOrTrainer, getWeeklyAttendance);
 
 // GET  /api/attendance/user/:userId — member history
 router.get('/user/:userId', protect, (req, res, next) => {
