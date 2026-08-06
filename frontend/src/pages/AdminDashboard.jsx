@@ -84,6 +84,7 @@ export function AdminDashboard({ onNavigate }) {
   });
   const [formErrors, setFormErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
+  const [weeklyAttendance, setWeeklyAttendance] = useState([]);
 
   useEffect(() => {
     fetchTrainers();
@@ -92,6 +93,7 @@ export function AdminDashboard({ onNavigate }) {
     fetchStats();
     fetchPendingPayments();
     fetchDailySummary(1);
+    fetchWeeklyAttendance();
 
     // Refresh every 30 seconds
     const interval = setInterval(() => {
@@ -99,6 +101,7 @@ export function AdminDashboard({ onNavigate }) {
       fetchTodayBookings();
       fetchStats();
       fetchPendingPayments();
+      fetchWeeklyAttendance();  
     }, 30000);
     return () => clearInterval(interval);
   }, []);
@@ -133,6 +136,21 @@ export function AdminDashboard({ onNavigate }) {
       console.error('Error fetching stats:', error);
     }
   };
+
+  const fetchWeeklyAttendance = async () => {
+  try {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_URL}/attendance/weekly`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (response.ok) {
+      const data = await response.json();
+      setWeeklyAttendance(data.weeklyAttendance || []);
+    }
+  } catch (error) {
+    console.error('Error fetching weekly attendance:', error);
+  }
+};
 
   const fetchTodayRevenue = async (page = 1) => {
     setRevenueLoading(true);
@@ -466,14 +484,7 @@ export function AdminDashboard({ onNavigate }) {
       setSubmitting(false);
     }
   };
-  const attendanceData = [
-    { day: 'Mon', members: 145 },
-    { day: 'Tue', members: 168 },
-    { day: 'Wed', members: 152 },
-    { day: 'Thu', members: 178 },
-    { day: 'Fri', members: 195 },
-    { day: 'Sun', members: 185 },
-  ];
+ 
 
 
 
@@ -563,7 +574,7 @@ export function AdminDashboard({ onNavigate }) {
             <div className="bg-neutral-800/50 border border-neutral-700 rounded-xl p-6">
               <h2 className="text-xl font-semibold text-white mb-6">Weekly Attendance</h2>
               <ResponsiveContainer width="100%" height={250}>
-                <BarChart data={attendanceData}>
+                <BarChart data={weeklyAttendance}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#404040" />
                   <XAxis dataKey="day" stroke="#9ca3af" />
                   <YAxis stroke="#9ca3af" />

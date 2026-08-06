@@ -6,6 +6,7 @@ import {
   getUserAttendance,
   getAttendanceStats
 } from '../controllers/attendance.controller.js';
+router.get('/weekly', authMiddleware, getWeeklyAttendance);
 
 const router = express.Router();
 

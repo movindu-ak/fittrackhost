@@ -151,6 +151,51 @@ export const getTodayAttendance = async (req, res) => {
 };
 
 // ─────────────────────────────────────────────────────────
+// GET /api/attendance/weekly
+// Sum of attendance (check-ins) per day for the last 7 days
+// ─────────────────────────────────────────────────────────
+export const getWeeklyAttendance = async (req, res) => {
+  try {
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+
+    const sevenDaysAgo = new Date(todayStart);
+    sevenDaysAgo.setDate(todayStart.getDate() - 6); // last 7 days incl. today
+
+    const results = await Attendance.aggregate([
+      { $match: { date: { $gte: sevenDaysAgo } } },
+      {
+        $group: {
+          _id: { $dateToString: { format: '%Y-%m-%d', date: '$date' } },
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+
+    const dayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const weekData = [];
+
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(todayStart);
+      d.setDate(todayStart.getDate() - i);
+      const dateStr = d.toISOString().split('T')[0];
+      const match = results.find(r => r._id === dateStr);
+
+      weekData.push({
+        date: dateStr,
+        day: dayLabels[d.getDay()],
+        members: match ? match.count : 0   // key matches existing chart's dataKey="members"
+      });
+    }
+
+    res.json({ weeklyAttendance: weekData });
+  } catch (error) {
+    console.error('Error fetching weekly attendance:', error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// ─────────────────────────────────────────────────────────
 // GET /api/attendance/user/:userId
 // Get attendance history for a specific member
 // ─────────────────────────────────────────────────────────
