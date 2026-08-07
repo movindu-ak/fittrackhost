@@ -227,9 +227,7 @@ export const SignUp = () => {
                 name="signup_email"
                 value={formData.email}
                 onChange={handleChange}
-                autoComplete="off"
-                readOnly
-                onFocus={e => e.target.removeAttribute('readonly')}
+                autoComplete="new-password"
                 placeholder="Enter your email"
                 error={errors.email}
                 required
