@@ -224,7 +224,7 @@ export const SignUp = () => {
              <Input
                 label="Email"
                 type="email"
-                name="signup_email"
+                name="email"
                 value={formData.email}
                 onChange={handleChange}
                 autoComplete="new-password"
