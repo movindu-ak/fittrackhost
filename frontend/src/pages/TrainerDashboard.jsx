@@ -219,6 +219,11 @@ export const TrainerDashboard = () => {
           </p>
         </div>
 
+         {/* Availability Timetable */}
+        <div className="mb-8">
+          <TrainerTimetable />
+        </div>
+
         {/* Booking Summary Section */}
         <div className="mb-8">
           <div className="flex items-center mb-4">
