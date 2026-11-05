@@ -84,7 +84,7 @@ export function BookingPage() {
 
       for (const timeSlot of selectedSlots) {
         const response = await fetch(
-          `https://fittrackhost.onrender.com/api/bookings/trainer/${selectedTrainer}/availability?date=${selectedDate.toISOString()}&timeSlot=${encodeURIComponent(timeSlot)}`,
+          `https://fittrackhost.onrender.com/api/bookings/trainer/${selectedTrainer}/availability?date=${dayStart(selectedDate).toISOString()}&timeSlot=${encodeURIComponent(timeSlot)}`,
           {
             headers: {
               'Authorization': `Bearer ${token}`
@@ -163,23 +163,26 @@ export function BookingPage() {
 
     return false;
   };
-
+  const dayStart = (d) => { const x = new Date(d); x.setHours(0, 0, 0, 0); return x; };
   const handleBooking = async () => {
     if (selectedSlots.length === 0) {
       alert('Please select at least one time slot');
       return;
     }
 
-    // Check if any trainer slots are fully booked
+    // Check if any trainer slots are unavailable or fully booked
     if (bookingType === 'trainer' && selectedTrainer) {
       for (const slot of selectedSlots) {
         if (trainerAvailability[slot] && !trainerAvailability[slot].available) {
-          alert(`Cannot book: The selected trainer is fully booked (5/5) for ${slot}. Please select a different timeslot or trainer.`);
+          alert(
+            trainerAvailability[slot].isOpen === false
+              ? `Cannot book: the trainer is not available for ${slot}. Please select a different timeslot or trainer.`
+              : `Cannot book: the selected trainer is fully booked for ${slot}. Please select a different timeslot or trainer.`
+          );
           return;
         }
       }
     }
-
     try {
       const token = localStorage.getItem('token');
 
@@ -187,7 +190,7 @@ export function BookingPage() {
       const bookingPromises = selectedSlots.map(async (timeSlot) => {
         const bookingData = {
           type: bookingType,
-          date: selectedDate,
+          date: dayStart(selectedDate),
           timeSlot
         };
 
@@ -538,9 +541,11 @@ export function BookingPage() {
                                 ? 'text-green-400'
                                 : 'text-red-400'
                                 }`}>
-                                {trainerAvailability[slot].available
-                                  ? `✓ ${trainerAvailability[slot].spotsRemaining} of 5 spots available`
-                                  : '✗ Fully booked (5/5)'}
+                                                                {trainerAvailability[slot].available
+                                  ? `✓ ${trainerAvailability[slot].spotsRemaining} of ${trainerAvailability[slot].totalCapacity} spots available`
+                                  : trainerAvailability[slot].isOpen === false
+                                    ? '✗ Trainer not available'
+                                    : `✗ Fully booked (${trainerAvailability[slot].totalCapacity}/${trainerAvailability[slot].totalCapacity})`}
                               </div>
                             )}
                           </div>

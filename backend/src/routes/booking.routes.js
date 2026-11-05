@@ -12,9 +12,19 @@ import {
   getTrainerAvailability,
   getTrainerBookingSummary,
   getTodayBookingsCount,
-  getTodayBookingsDetails
+  getTodayBookingsDetails,
+  getTrainerAvailabilityWeek,
+  updateTrainerAvailability,
+  updateTrainerSpots
 } from '../controllers/booking.controller.js';
 import { protect, admin } from '../middleware/auth.middleware.js';
+
+const trainerOnly = (req, res, next) => {
+  if (req.user?.role !== 'trainer') {
+    return res.status(403).json({ message: 'Trainer access required' });
+  }
+  next();
+};
 
 const router = express.Router();
 
@@ -26,6 +36,9 @@ router.get('/today/details', protect, admin, getTodayBookingsDetails);
 router.get('/trainer', protect, getTrainerBookings);
 router.get('/trainer/summary', protect, getTrainerBookingSummary);
 router.get('/trainer/:trainerId/availability', protect, getTrainerAvailability);
+router.get('/trainer/availability', protect, trainerOnly, getTrainerAvailabilityWeek);
+router.put('/trainer/availability', protect, trainerOnly, updateTrainerAvailability);
+router.put('/trainer/spots', protect, updateTrainerSpots);
 router.put('/:id/cancel', protect, cancelBooking);
 router.put('/:id/complete', protect, completeBooking);
 router.put('/:id/status', protect, updateBookingStatus);

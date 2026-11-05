@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { Dumbbell, LogOut, Calendar, CheckCircle, XCircle, Clock, TrendingUp, Users } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { useEffect, useState } from 'react';
+import { TrainerTimetable } from '../components/TrainerTimetable';
 
 export const TrainerDashboard = () => {
   const navigate = useNavigate();
@@ -257,9 +258,9 @@ export const TrainerDashboard = () => {
                             <Clock className="h-4 w-4 mr-2 text-purple-400" />
                             <span className="text-white font-medium text-sm">{slot.timeSlot}</span>
                           </div>
-                          <span className={`px-2 py-1 rounded-full text-xs font-semibold ${slot.count >= 5
+                          <span className={`px-2 py-1 rounded-full text-xs font-semibold ${slot.count >= slot.capacity
                             ? 'bg-red-500/20 text-red-400'
-                            : slot.count >= 3
+                            : slot.count >= Math.ceil(slot.capacity * 0.6)
                               ? 'bg-yellow-500/20 text-yellow-400'
                               : 'bg-green-500/20 text-green-400'
                             }`}>
@@ -270,9 +271,9 @@ export const TrainerDashboard = () => {
                         <div className="mb-3">
                           <div className="w-full bg-neutral-700 rounded-full h-2">
                             <div
-                              className={`h-2 rounded-full transition-all ${slot.count >= 5
+                              className={`h-2 rounded-full transition-all ${slot.count >= slot.capacity
                                 ? 'bg-red-500'
-                                : slot.count >= 3
+                                : slot.count >= Math.ceil(slot.capacity * 0.6)
                                   ? 'bg-yellow-500'
                                   : 'bg-green-500'
                                 }`}

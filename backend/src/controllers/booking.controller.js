@@ -1,5 +1,17 @@
 import Booking from '../models/Booking.js';
 import Membership from '../models/Membership.js';
+import User from '../models/User.js';
+import TrainerAvailability from '../models/TrainerAvailability.js';
+import { TIME_SLOTS } from '../constants/timeSlots.js';
+
+
+// Returns the trainer's setting for one date + timeslot (open with default spots if never set)
+const getSlotConfig = async (trainerId, date, timeSlot) => {
+  const record = await TrainerAvailability.findOne({ trainer: trainerId, date: new Date(date), timeSlot });
+  if (record) return { isOpen: record.isOpen, spots: record.spots };
+  const trainerUser = await User.findById(trainerId).select('spotsPerSlot');
+  return { isOpen: true, spots: trainerUser?.spotsPerSlot || 5 };
+};
 
 // @desc    Create new booking
 // @route   POST /api/bookings
@@ -42,9 +54,16 @@ export const createBooking = async (req, res) => {
       });
     }
 
-    // If booking type is trainer, check the 5-member limit per timeslot
+   // If booking type is trainer, check the trainer's custom member limit per timeslot
     if (type === 'trainer' && trainer) {
-      // Count existing confirmed bookings for this trainer at this timeslot
+      const { isOpen, spots } = await getSlotConfig(trainer, date, timeSlot);
+
+      if (!isOpen) {
+        return res.status(400).json({
+          message: 'This trainer is not available for this timeslot. Please select another timeslot or trainer.'
+        });
+      }
+
       const existingBookings = await Booking.countDocuments({
         trainer,
         date: new Date(date),
@@ -52,9 +71,9 @@ export const createBooking = async (req, res) => {
         status: { $in: ['processing', 'confirmed'] }
       });
 
-      if (existingBookings >= 5) {
-        return res.status(400).json({ 
-          message: 'This trainer has reached the maximum capacity (5 members) for this timeslot. Please select another timeslot or trainer.' 
+      if (existingBookings >= spots) {
+        return res.status(400).json({
+          message: `This trainer has reached the maximum capacity (${spots} members) for this timeslot. Please select another timeslot or trainer.`
         });
       }
     }
@@ -172,6 +191,27 @@ export const confirmBooking = async (req, res) => {
       .populate('user', 'name email phone');
 
     res.json(updatedBooking);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Update trainer's spots per timeslot
+// @route   PUT /api/bookings/trainer/spots
+// @access  Private/Trainer
+export const updateTrainerSpots = async (req, res) => {
+  try {
+    const { spotsPerSlot } = req.body;
+
+    if (!spotsPerSlot || spotsPerSlot < 1) {
+      return res.status(400).json({ message: 'Spots per slot must be at least 1' });
+    }
+
+    const trainer = await User.findById(req.user._id);
+    trainer.spotsPerSlot = spotsPerSlot;
+    await trainer.save();
+
+    res.json({ spotsPerSlot: trainer.spotsPerSlot });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -300,6 +340,8 @@ export const getTrainerAvailability = async (req, res) => {
       });
     }
 
+       const { isOpen, spots } = await getSlotConfig(trainerId, date, timeSlot);
+
     const bookingCount = await Booking.countDocuments({
       trainer: trainerId,
       date: new Date(date),
@@ -307,13 +349,11 @@ export const getTrainerAvailability = async (req, res) => {
       status: { $in: ['processing', 'confirmed'] }
     });
 
-    const available = bookingCount < 5;
-    const spotsRemaining = Math.max(0, 5 - bookingCount);
-
     res.json({
-      available,
-      spotsRemaining,
-      totalCapacity: 5,
+      available: isOpen && bookingCount < spots,
+      isOpen,
+      spotsRemaining: isOpen ? Math.max(0, spots - bookingCount) : 0,
+      totalCapacity: spots,
       currentBookings: bookingCount
     });
   } catch (error) {
@@ -328,8 +368,6 @@ export const getTrainerBookingSummary = async (req, res) => {
   try {
     const { date } = req.query;
     const trainerId = req.user._id;
-
-    // If date is provided, filter by that date, otherwise get all upcoming bookings
     const dateFilter = date ? { date: new Date(date) } : { date: { $gte: new Date() } };
 
     const bookings = await Booking.find({
@@ -338,19 +376,22 @@ export const getTrainerBookingSummary = async (req, res) => {
       status: { $in: ['processing', 'confirmed'] }
     }).populate('user', 'name email');
 
-    // Group bookings by date and timeSlot
     const summary = {};
-    
+
+        // Create a map of trainer availability configurations
+    const records = await TrainerAvailability.find({ trainer: trainerId });
+    const configMap = new Map(records.map(r => [`${r.date.getTime()}|${r.timeSlot}`, r.spots]));
+    const defaultSpots = req.user.spotsPerSlot || 5;
+
     bookings.forEach(booking => {
       const dateKey = new Date(booking.date).toISOString().split('T')[0];
-      if (!summary[dateKey]) {
-        summary[dateKey] = {};
-      }
+      if (!summary[dateKey]) summary[dateKey] = {};
       if (!summary[dateKey][booking.timeSlot]) {
         summary[dateKey][booking.timeSlot] = {
           timeSlot: booking.timeSlot,
           count: 0,
-          capacity: 5,
+          // Get the capacity for this specific date and time slot, or use the default
+          capacity: configMap.get(`${new Date(booking.date).getTime()}|${booking.timeSlot}`) ?? defaultSpots,// now dynamic
           members: []
         };
       }
@@ -363,7 +404,6 @@ export const getTrainerBookingSummary = async (req, res) => {
       });
     });
 
-    // Convert to array format
     const formattedSummary = Object.entries(summary).map(([date, slots]) => ({
       date,
       slots: Object.values(slots)
@@ -430,6 +470,116 @@ export const getTodayBookingsDetails = async (req, res) => {
       currentPage: page,
       date: startOfDay.toISOString().split('T')[0]
     });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Get trainer's timetable for 7 days starting at `start`
+// @route   GET /api/bookings/trainer/availability?start=<ISO of local midnight>
+// @access  Private/Trainer
+export const getTrainerAvailabilityWeek = async (req, res) => {
+  try {
+    const { start } = req.query;
+    if (!start || isNaN(new Date(start))) {
+      return res.status(400).json({ message: 'A valid start date is required' });
+    }
+
+    const first = new Date(start);
+    const dates = Array.from({ length: 7 }, (_, i) => new Date(first.getTime() + i * 86400000));
+
+    const [records, trainerUser, counts] = await Promise.all([
+      TrainerAvailability.find({ trainer: req.user._id, date: { $in: dates } }),
+      User.findById(req.user._id).select('spotsPerSlot'),
+      Booking.aggregate([
+        {
+          $match: {
+            trainer: req.user._id,
+            date: { $in: dates },
+            status: { $in: ['processing', 'confirmed'] }
+          }
+        },
+        { $group: { _id: { date: '$date', timeSlot: '$timeSlot' }, count: { $sum: 1 } } }
+      ])
+    ]);
+
+    const defaultSpots = trainerUser?.spotsPerSlot || 5;
+    const recordMap = new Map(records.map(r => [`${r.date.getTime()}|${r.timeSlot}`, r]));
+    const bookedMap = new Map(counts.map(c => [`${c._id.date.getTime()}|${c._id.timeSlot}`, c.count]));
+
+    const week = dates.map(d => ({
+      date: d.toISOString(),
+      slots: TIME_SLOTS.map(timeSlot => {
+        const key = `${d.getTime()}|${timeSlot}`;
+        const rec = recordMap.get(key);
+        return {
+          timeSlot,
+          isOpen: rec ? rec.isOpen : true,
+          spots: rec ? rec.spots : defaultSpots,
+          booked: bookedMap.get(key) || 0
+        };
+      })
+    }));
+
+    res.json({ defaultSpots, week });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Save the whole week's timetable in one request
+// @route   PUT /api/bookings/trainer/availability
+// @access  Private/Trainer
+export const updateTrainerAvailability = async (req, res) => {
+  try {
+    const { slots } = req.body;
+    if (!Array.isArray(slots) || slots.length === 0) {
+      return res.status(400).json({ message: 'No timetable data provided' });
+    }
+
+    const parsed = [];
+    for (const s of slots) {
+      const date = new Date(s.date);
+      const spots = parseInt(s.spots, 10);
+      if (isNaN(date) || !TIME_SLOTS.includes(s.timeSlot) || !(spots >= 1 && spots <= 50)) {
+        return res.status(400).json({ message: 'Invalid timetable entry. Spots must be between 1 and 50.' });
+      }
+      parsed.push({ date, timeSlot: s.timeSlot, spots, isOpen: s.isOpen !== false });
+    }
+
+    // Don't allow spots below existing bookings, or closing a slot that has bookings
+    const bookedCounts = await Promise.all(parsed.map(p =>
+      Booking.countDocuments({
+        trainer: req.user._id,
+        date: p.date,
+        timeSlot: p.timeSlot,
+        status: { $in: ['processing', 'confirmed'] }
+      })
+    ));
+
+    const conflicts = [];
+    parsed.forEach((p, i) => {
+      const booked = bookedCounts[i];
+      if (booked > 0 && (!p.isOpen || p.spots < booked)) {
+        conflicts.push(`${p.date.toDateString()} ${p.timeSlot}: ${booked} booking(s) already exist`);
+      }
+    });
+    if (conflicts.length > 0) {
+      return res.status(409).json({
+        message: 'Some slots already have bookings and cannot be closed or reduced below that number.',
+        conflicts
+      });
+    }
+
+    await TrainerAvailability.bulkWrite(parsed.map(p => ({
+      updateOne: {
+        filter: { trainer: req.user._id, date: p.date, timeSlot: p.timeSlot },
+        update: { $set: { isOpen: p.isOpen, spots: p.spots } },
+        upsert: true
+      }
+    })));
+
+    res.json({ message: 'Timetable updated', updated: parsed.length });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

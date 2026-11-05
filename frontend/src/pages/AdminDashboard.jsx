@@ -577,7 +577,7 @@ export function AdminDashboard({ onNavigate }) {
                 <BarChart data={weeklyAttendance}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#404040" />
                   <XAxis dataKey="day" stroke="#9ca3af" />
-                  <YAxis stroke="#9ca3af" />
+                  <YAxis stroke="#9ca3af" allowDecimals={false} />
                   <Tooltip />
                   <Bar dataKey="members" fill="#10b981" radius={[8, 8, 0, 0]} />
                 </BarChart>

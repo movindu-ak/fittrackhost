@@ -53,7 +53,12 @@ const userSchema = new mongoose.Schema({
   createdAt: {
     type: Date,
     default: Date.now
-  }
+  },
+  spotsPerSlot: {
+  type: Number,
+  default: 5,
+  min: 1
+ },
 });
 
 // Hash password before saving
