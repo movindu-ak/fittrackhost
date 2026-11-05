@@ -3,6 +3,7 @@ import { ChevronLeft, ChevronRight, Clock, User, Check, CreditCard, Lock } from 
 import { useNavigate } from 'react-router-dom';
 import { Navigation } from '../components/Navigation';
 import API_URL from '../config.js';
+import { TIME_SLOTS } from '../constants/timeSlots.js';
 
 export function BookingPage() {
   const navigate = useNavigate();
@@ -104,16 +105,39 @@ export function BookingPage() {
     }
   };
 
-  const timeSlots = [
-    { time: '6:00 AM - 7:30 AM', available: 15, total: 20, crowd: 'low' },
-    { time: '8:00 AM - 9:30 AM', available: 5, total: 20, crowd: 'high' },
-    { time: '10:00 AM - 11:30 AM', available: 12, total: 20, crowd: 'medium' },
-    { time: '12:00 PM - 1:30 PM', available: 18, total: 20, crowd: 'low' },
-    { time: '2:00 PM - 3:30 PM', available: 16, total: 20, crowd: 'low' },
-    { time: '4:00 PM - 5:30 PM', available: 8, total: 20, crowd: 'medium' },
-    { time: '6:00 PM - 7:30 PM', available: 2, total: 20, crowd: 'high' },
-    { time: '8:00 PM - 9:30 PM', available: 10, total: 20, crowd: 'medium' },
-  ];
+  const [slotStats, setSlotStats] = useState({});
+
+const fetchSlotStats = async () => {
+  try {
+    const token = localStorage.getItem('token');
+    const res = await fetch(
+      `${API_URL}/bookings/slots?date=${encodeURIComponent(dayStart(selectedDate).toISOString())}`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    if (res.ok) {
+      const data = await res.json();
+      setSlotStats(Object.fromEntries(data.map(s => [s.timeSlot, s])));
+    }
+  } catch (err) {
+    console.error('Error fetching slot occupancy:', err);
+  }
+};
+
+useEffect(() => { fetchSlotStats(); }, [selectedDate]);
+
+const crowdStyle = { low: 'text-green-400', medium: 'text-yellow-400', high: 'text-red-400' };
+const crowdLabel = { low: '🟢 Low', medium: '🟡 Medium', high: '🔴 High' };
+
+// same shape the JSX already uses, but now from real data (available is null until loaded)
+const timeSlots = TIME_SLOTS.map(time => {
+  const s = slotStats[time];
+  return {
+    time,
+    total: s?.capacity ?? 20,
+    available: s ? s.available : null,
+    crowd: s ? s.crowd : null
+  };
+});
 
   const getDaysInMonth = (date) => {
     const year = date.getFullYear();
@@ -527,14 +551,13 @@ export function BookingPage() {
                       <div className="mt-2 space-y-1">
                         {selectedSlots.map((slot, idx) => (
                           <div key={idx} className="bg-neutral-800 p-2 rounded">
-                            <div className="flex items-center justify-between">
-                              <span className="text-white text-xs">{slot}</span>
-                              <button
-                                onClick={() => setSelectedSlots(selectedSlots.filter(s => s !== slot))}
-                                className="text-red-400 hover:text-red-300 text-xs"
-                              >
-                                Remove
-                              </button>
+                            <div className="flex items-center justify-between text-sm">
+                              <span className={isPassed || !slot.crowd ? 'text-neutral-500' : crowdStyle[slot.crowd]}>
+                                {isPassed ? '🔒 Passed' : slot.crowd ? `${crowdLabel[slot.crowd]} crowd` : 'Loading…'}
+                              </span>
+                              <span className="text-neutral-400">
+                                {slot.available === null ? '–' : `${slot.available}/${slot.total} spots`}
+                              </span>
                             </div>
                             {selectedTrainer && trainerAvailability[slot] && (
                               <div className={`mt-1 text-xs ${trainerAvailability[slot].available

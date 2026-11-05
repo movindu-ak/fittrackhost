@@ -585,3 +585,46 @@ export const updateTrainerAvailability = async (req, res) => {
   }
 };
 
+const GYM_CAPACITY = 20; // members per timeslot — change here if needed
+
+// @desc    Real booking counts per timeslot for one day
+// @route   GET /api/bookings/slots?date=<ISO of local midnight>
+// @access  Private
+export const getSlotOccupancy = async (req, res) => {
+  try {
+    const { date } = req.query;
+    if (!date || isNaN(new Date(date))) {
+      return res.status(400).json({ message: 'A valid date is required' });
+    }
+
+    const start = new Date(date);
+    const end = new Date(start.getTime() + 86400000);
+
+    const counts = await Booking.aggregate([
+      {
+        $match: {
+          date: { $gte: start, $lt: end },
+          status: { $in: ['processing', 'confirmed', 'completed'] }
+        }
+      },
+      { $group: { _id: '$timeSlot', count: { $sum: 1 } } }
+    ]);
+    const countMap = new Map(counts.map(c => [c._id, c.count]));
+
+    const slots = TIME_SLOTS.map(timeSlot => {
+      const booked = countMap.get(timeSlot) || 0;
+      const percent = (booked / GYM_CAPACITY) * 100;
+      return {
+        timeSlot,
+        booked,
+        capacity: GYM_CAPACITY,
+        available: Math.max(0, GYM_CAPACITY - booked),
+        crowd: percent < 40 ? 'low' : percent < 70 ? 'medium' : 'high'
+      };
+    });
+
+    res.json(slots);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
